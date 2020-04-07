@@ -14,6 +14,7 @@ using SciChart.Core.Extensions;
 using SciChart.Data.Model;
 using System.Linq;
 using System.Windows.Media;
+using NAudio.Wave;
 
 namespace SciChartExamlpeOne
 {
@@ -98,7 +99,9 @@ namespace SciChartExamlpeOne
         static StringBuilder _com_bufReceiedData = new StringBuilder() ;
         public ConcurrentQueue<Int32> nDataPure = new ConcurrentQueue<Int32>() ;
 
-        long nTotDataRecieved = 0;
+        double nTotDataRecieved = 0;
+        double nTotalOnlineTime = 0;
+        double nTotPureDataReceied = 0;
         long nTotPacketRecieved = 0;
         public double nTimeDataRange ;
 
@@ -125,6 +128,9 @@ namespace SciChartExamlpeOne
             }
             Comm_Port_Names.SelectedIndex = 0;
             WindowState = WindowState.Maximized;
+
+            //var wo = new WaveOutEvent();
+
         }
 
         #region Initialize Components
@@ -335,7 +341,8 @@ namespace SciChartExamlpeOne
                 if (index > -1)
                 {
                     nTotPacketRecieved++;
-                    for(int i=0; i<Constants.FRMLEN; i++)
+                    nTotPureDataReceied += Constants.FRMLEN;
+                    for (int i=0; i<Constants.FRMLEN; i++)
                     {
                         int idx = i + index + Constants.HDRLEN ;
                         int value = Convert.ToInt32(bufferString[idx]);
@@ -346,7 +353,7 @@ namespace SciChartExamlpeOne
             }
             _com_bufReceiedData = new StringBuilder(bufferString);
 
-            lblComDataReceived.Text = nTotPacketRecieved.ToString();   //nDataPure.Count.ToString();
+            //lblComDataReceived.Text = nTotPacketRecieved.ToString();   //nDataPure.Count.ToString();
         }
 
         #endregion
@@ -405,6 +412,16 @@ namespace SciChartExamlpeOne
                 _com_online = false;
                 lblComState.Text = "Device Online";
                 lblComState.Foreground = Brushes.Black;
+                if (nTotalOnlineTime == 0)
+                {
+                    nTotPureDataReceied = 0;
+                    nTotalOnlineTime = 1;
+                }
+                else
+                {
+                    nTotalOnlineTime += _com_connecttimer.Interval.TotalMilliseconds.ToDouble();
+                    lblComDataReceived.Text = ((double)nTotPureDataReceied / (double)nTotalOnlineTime).ToString("0.##");
+                }
             }
                 
             _com_connecttimer.Interval = TimeSpan.FromMilliseconds(1000.0);

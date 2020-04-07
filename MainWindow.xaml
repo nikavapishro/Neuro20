@@ -150,11 +150,8 @@
             <StatusBarItem>
                 <TextBlock Name="lblComState" />
             </StatusBarItem>
-            <StatusBarItem Grid.Column="1">
-                <ProgressBar Value="30" Width="80" Height="18"/>
-            </StatusBarItem>
             <StatusBarItem Grid.Column="2">
-                <TextBlock x:Name="lblStatus">NO Received Packet</TextBlock>
+                <TextBlock x:Name="lblStatus">Connection Speed [KB]</TextBlock>
             </StatusBarItem>
             <StatusBarItem Grid.Column="3">
                 <TextBlock x:Name="lblComDataReceived" />
