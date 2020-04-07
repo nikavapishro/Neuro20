@@ -1,0 +1,46 @@
+﻿<UserControl x:Class="SciChartExamlpeOne.NumericUpDown"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
+             xmlns:local="clr-namespace:SciChartExamlpeOne">
+    <Border>
+        <Border.OpacityMask>
+            <VisualBrush>
+                <VisualBrush.Visual>
+                    <Border Background="Black" SnapsToDevicePixels="True"
+                            CornerRadius="4"
+                            Width="{Binding ActualWidth, RelativeSource={RelativeSource FindAncestor, AncestorType=Border}}"
+                            Height="{Binding ActualHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=Border}}" />
+                </VisualBrush.Visual>
+            </VisualBrush>
+        </Border.OpacityMask>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="20" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="13" />
+                <RowDefinition Height="13" />
+            </Grid.RowDefinitions>
+
+            <Border BorderThickness="1" BorderBrush="Gray" Margin="2"  CornerRadius="4"
+                Grid.RowSpan="2" VerticalAlignment="Center" HorizontalAlignment="Stretch">
+
+                <!--Bind the TextBlock to the Value property-->
+                <TextBlock 
+                TextAlignment="Left" Padding="5" Width="50" x:Name="txtNumber"
+                    VerticalAlignment="Center" HorizontalAlignment="Center"
+                Text="{Binding RelativeSource={RelativeSource FindAncestor, 
+                               AncestorType={x:Type local:NumericUpDown}}, 
+                               Path=StringValue}"/>
+            </Border>
+
+            <Button Name="upButton" Click="upButton_Click" 
+                      Grid.Column="1" Grid.Row="0" x:FieldModifier="private" FontSize="8" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" >˄</Button>
+
+            <Button Name="downButton" Click="downButton_Click" 
+                      Grid.Column="1" Grid.Row="1" x:FieldModifier="private" FontSize="8" VerticalContentAlignment="Center" HorizontalContentAlignment="Center">˅</Button>
+
+        </Grid>
+    </Border>
+</UserControl>

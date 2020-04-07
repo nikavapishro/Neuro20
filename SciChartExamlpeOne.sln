@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29920.165
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SciChartExamlpeOne", "SciChartExamlpeOne.csproj", "{9DB836E2-9619-4E9C-BD3A-7E4E13F1FFAC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9DB836E2-9619-4E9C-BD3A-7E4E13F1FFAC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9DB836E2-9619-4E9C-BD3A-7E4E13F1FFAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9DB836E2-9619-4E9C-BD3A-7E4E13F1FFAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9DB836E2-9619-4E9C-BD3A-7E4E13F1FFAC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5AFDC61C-BF20-44A2-968C-BA124F37FEBF}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Data>
+  <Comms>
+    <Ports>COM1</Ports>
+    <Ports>COM2</Ports>
+    <Ports>COM3</Ports>
+    <Ports>COM4</Ports>
+    <Ports>COM5</Ports>
+    <Ports>COM6</Ports>
+    <Ports>COM7</Ports>
+    <Ports>COM8</Ports>
+    <Ports>COM9</Ports>
+    <Baud>2400</Baud>
+    <Baud>4800</Baud>
+    <Baud>9600</Baud>
+    <Baud>19200</Baud>
+    <Baud>38400</Baud>
+    <Baud>57600</Baud>
+    <Baud>115200</Baud>
+    <Baud>230400</Baud>
+    <Baud>460800</Baud>
+    <Baud>921600</Baud>
+  </Comms>
+  <Filters>
+    <LowPass>400</LowPass>
+    <LowPass>640</LowPass>
+    <LowPass>1000</LowPass>
+    <LowPass>2500</LowPass>
+    <LowPass>4000</LowPass>
+    <LowPass>10000</LowPass>
+    <LowPass>20000</LowPass>
+    <HighPass>10</HighPass>
+    <HighPass>25</HighPass>
+    <HighPass>40</HighPass>
+    <HighPass>100</HighPass>
+    <HighPass>250</HighPass>
+    <HighPass>400</HighPass>
+  </Filters>
+</Data>
