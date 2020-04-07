@@ -10,6 +10,8 @@ namespace SciChartExamlpeOne
     class FilterData
     {
         public XyDataSeries<double, double> _DataSeries;
+        public bool isNotchEnable = false;
+
         private int nLastIndex;
         private const int _length_MA = Constants.MOVINGAVERAGE_LENGTH;   //Moving Average Filter Length
         private List<double> _OriginalValues;
@@ -17,6 +19,8 @@ namespace SciChartExamlpeOne
         private LowpassFilterButterworthImplementation _firLowPass;
         private HighpassFilterButterworthImplementation _firHighPass;
         private BandpassFilterButterworthImplementation _firBandPass;
+        private NotchFilterImplementation _firNotch;
+
 
         public FilterData()
         {
@@ -33,7 +37,7 @@ namespace SciChartExamlpeOne
             _filtertype = _ftype;
         }
 
-        public FilterData(FilterTypes _ftype, double Fsample, int order1, double F3db1, int order2, double F3db2)
+        public FilterData(FilterTypes _ftype, double Fsample, int order1, double F3db1, int order2 = 0, double F3db2 = 0)
         {
             _DataSeries = new XyDataSeries<double, double>();
             nLastIndex = 0;
@@ -53,6 +57,10 @@ namespace SciChartExamlpeOne
                 _firBandPass = new BandpassFilterButterworthImplementation(F3db1, order1, F3db2, order2, Fsample);
                 _OriginalValues = new List<double>();
             }
+            else if(_filtertype == FilterTypes.Notch)
+            {
+                _firNotch = new NotchFilterImplementation(F3db1, Fsample, order1);
+            }
                 
         }
 
@@ -70,42 +78,57 @@ namespace SciChartExamlpeOne
             {
                 _firBandPass = new BandpassFilterButterworthImplementation(F3db1, order1, F3db2, order2, Fsample);
             }
+            else if (_ftype == FilterTypes.Notch)
+            {
+                _firNotch = new NotchFilterImplementation(F3db1, Fsample, order1);
+            }
         }
 
         public void Append(double xValue, double yValue)
         {
+            double result = 0.0;
             if (_filtertype == FilterTypes.MovingAverage)
             {
-                _DataSeries.Append(xValue, MovingAverage(yValue));
+                result = MovingAverage(yValue);
             }
             else if (_filtertype == FilterTypes.LowPass)
             {
-                _DataSeries.Append(xValue, LowPass(yValue));
+                result = LowPass(yValue);
             }
             else if (_filtertype == FilterTypes.FIRLowPass)
             {
-                _DataSeries.Append(xValue, _firLowPass.compute(yValue));
+                result = _firLowPass.compute(yValue);
             }
             else if (_filtertype == FilterTypes.FIRHighPass)
             {
-                _DataSeries.Append(xValue, _firHighPass.compute(yValue));
+                result = _firHighPass.compute(yValue);
             }
             else if (_filtertype == FilterTypes.FIRBandPass)
             {
-                _DataSeries.Append(xValue, _firBandPass.compute(yValue));
+                result = _firBandPass.compute(yValue);
             }
             else if (_filtertype == FilterTypes.FIRLP_MA)
             {
                 double val = _firLowPass.compute(yValue);
-                _DataSeries.Append(xValue, MovingAverage(val));
+                result = MovingAverage(val);
             }
             else if (_filtertype == FilterTypes.FIRBP_MA)
             {
                 double val = _firBandPass.compute(yValue);
-                _DataSeries.Append(xValue, MovingAverage(val));
+                result = MovingAverage(val);
             }
             else
-                _DataSeries.Append(xValue, yValue);
+                result = yValue;
+
+            if (isNotchEnable)
+            {
+                _DataSeries.Append(xValue, _firNotch.compute(result));
+            }
+            else
+            {
+                _DataSeries.Append(xValue, result);
+            }
+
             nLastIndex++;
         }
         public int GetLastIndex()

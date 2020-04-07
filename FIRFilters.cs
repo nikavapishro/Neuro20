@@ -10,6 +10,51 @@ namespace SciChartExamlpeOne
     {
     }
 
+    public class NotchFilterImplementation
+    {
+        protected double[] a = new double[3];
+        protected double[] b = new double[2];
+        protected double gain;
+
+        protected List<double> x;
+        protected List<double> y;
+
+        int nLen;
+        int nOrder;
+
+        public NotchFilterImplementation (double centerFrequencyHz, double Fs , int nOrder)
+        {
+            double zeta = Math.Cos(2.0 * Math.PI * centerFrequencyHz / Fs);
+            double beta = 0.995;
+            a[0] = 1.0;
+            a[2] = a[0] * (1.0 - beta) * (1.0 - beta) / (2.0 * (Math.Abs(zeta) + 1.0)) + beta;
+            a[1] = -2.0 * zeta * a[0] * a[2];
+            b[0] = 2.0 * zeta * beta;
+            b[1] = -beta * beta;
+            gain = 1.0;
+
+            x = new List<double>();
+            y = new List<double>();
+            nLen = 0;
+            this.nOrder = nOrder;
+        }
+
+        public double compute(double yValue)
+        {
+            double res = 0.0;
+            x.Add(yValue);
+            if (++nLen >= nOrder) {
+                res = a[0] * a[2] * x[0] + a[1] * x[1] + a[0] * a[2] * x[2];
+                res += b[1] * y[0] + b[0] * y[1];
+                x.RemoveAt(0);
+                y.RemoveAt(0);
+                nLen--;
+            }
+            y.Add(res);
+            return res;
+        }
+    }
+
     public class BandpassFilterButterworthImplementation
     {
         protected LowpassFilterButterworthImplementation lowpassFilter;

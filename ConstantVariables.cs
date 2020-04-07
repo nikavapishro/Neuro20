@@ -32,6 +32,7 @@ namespace SciChartExamlpeOne
         public const int FIR_LOWPASS_ORDER = 4;
         public const int FIR_HIGHPASS_ORDER = 1;
         public const int MOVINGAVERAGE_LENGTH = 11;
+        public const int FIR_NOTCH = 3;
     }
 
     class ConstantVariables

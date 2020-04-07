@@ -29,16 +29,14 @@
         <!-- Oscope Settings -->
         <Grid Grid.Row="0" Margin="10,0,10,0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
@@ -56,6 +54,8 @@
             <!--High Cut Filter-->
             <TextBlock Grid.Column="6" Text="High Pass Filter" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,0,20,0"/>
             <ComboBox Grid.Column="7" Width="70" x:Name="cmbHighPassFilter" HorizontalAlignment="Stretch" SelectionChanged="cmbFilter_SelectionChanged" ItemsSource="{Binding Source={StaticResource FilterHighPass}}" />
+            <!--Notch Filter-->
+            <CheckBox Grid.Column="8" VerticalAlignment="Center" HorizontalAlignment="Center" IsChecked="False" x:Name="cbxNotch" Content="-(50Hz)" Unchecked="cbxNotch_Change" Checked="cbxNotch_Change" />
         </Grid>
 
         <!-- Create the chart surface -->
@@ -103,10 +103,6 @@
 
                 </s:ModifierGroup>
             </s:SciChartSurface.ChartModifier>
-            <!--Add Annotation Hint-->
-            <s:SciChartSurface.Annotations>
-                <s:TextAnnotation Text="Hello World!" X1="5.0" Y1="5.0"/>
-            </s:SciChartSurface.Annotations>
         </s:SciChartSurface>
 
         <!-- Add a Scrollbar, and bind to SciChartSurface.XAxis -->

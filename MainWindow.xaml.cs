@@ -154,11 +154,14 @@ namespace SciChartExamlpeOne
             // Create XyDataSeries to host data for our charts
             _originalData = new XyDataSeries<double, double>();
             //_originalData.FifoCapacity = _sci_timeIndex.getVisibleRange_int() ;
+            
             //var _filteredData = new CustomFilter(_originalData);
             //_filterData = new FilterData(FilterTypes.LowPass);
             _filterData = new FilterData(FilterTypes.FIRBP_MA, Properties.Settings.Default.SAMPLERATE,
-                 Constants.FIR_HIGHPASS_ORDER, cmbHighPassFilter.SelectedValue.ToString().ToDouble(), 
-                 Constants.FIR_LOWPASS_ORDER, cmbLowPassFilter.SelectedValue.ToString().ToDouble()) ;
+                 Constants.FIR_HIGHPASS_ORDER, cmbHighPassFilter.SelectedValue.ToString().ToDouble(),
+                 Constants.FIR_LOWPASS_ORDER, cmbLowPassFilter.SelectedValue.ToString().ToDouble());
+            _filterData.ResetFilter(FilterTypes.Notch, Properties.Settings.Default.SAMPLERATE, Constants.FIR_NOTCH, 50.0);
+            _filterData.isNotchEnable = (bool)cbxNotch.IsChecked;
 
             _originalData.SeriesName = "CHANNEL 1";
             //_filteredData.FilteredDataSeries.SeriesName = "Moving Average";
@@ -230,6 +233,11 @@ namespace SciChartExamlpeOne
                     _filterData.ResetFilter(FilterTypes.FIRBP_MA, Properties.Settings.Default.SAMPLERATE,
                         Constants.FIR_HIGHPASS_ORDER, valL,
                         Constants.FIR_LOWPASS_ORDER, valH);
+        }
+
+        private void cbxNotch_Change(object sender, RoutedEventArgs e)
+        {
+            _filterData.isNotchEnable = (bool) cbxNotch.IsChecked;
         }
 
         #endregion
@@ -427,6 +435,6 @@ namespace SciChartExamlpeOne
         }
 
         #endregion
-        
+
     }
 }
