@@ -1,4 +1,5 @@
-﻿
+﻿#define SOUNDPLAYENABLE
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -14,6 +15,7 @@ using SciChart.Core.Extensions;
 using SciChart.Data.Model;
 using System.Linq;
 using System.Windows.Media;
+using System.Windows.Interop;
 using NAudio.Wave;
 
 namespace SciChartExamlpeOne
@@ -89,6 +91,9 @@ namespace SciChartExamlpeOne
     public partial class MainWindow : Window
     {
         #region variables
+        public decimal _adc_ConvertNum2Value;
+
+        public IntPtr Handle;
 
         SerialPort _com_serial = new SerialPort();
         private DispatcherTimer _com_connecttimer;
@@ -98,6 +103,12 @@ namespace SciChartExamlpeOne
         bool _com_online = false;
         static StringBuilder _com_bufReceiedData = new StringBuilder() ;
         public ConcurrentQueue<Int32> nDataPure = new ConcurrentQueue<Int32>() ;
+
+        #region Sound Player
+        private BufferedWaveProvider _snd_bufferedWaveProvider;
+        private WaveOut _snd_player;
+        private bool _snd_isPlaying;
+        #endregion
 
         double nTotDataRecieved = 0;
         double nTotalOnlineTime = 0;
@@ -128,9 +139,13 @@ namespace SciChartExamlpeOne
             }
             Comm_Port_Names.SelectedIndex = 0;
             WindowState = WindowState.Maximized;
+        }
 
-            //var wo = new WaveOutEvent();
-
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            Handle = new WindowInteropHelper(Application.Current.MainWindow).Handle;
+            InitSoundPlayer(Properties.Settings.Default.SAMPLERATE, 1, 1);
+            _adc_ConvertNum2Value = GetAdcCoef();
         }
 
         #region Initialize Components
@@ -138,6 +153,7 @@ namespace SciChartExamlpeOne
         {
             this.Title = "Neuro 2014 EMG Test Suit";
             lblComState.Text = "Disconnected";
+            _snd_isPlaying = false;
             _sci_timeIndex = new TimeIndex();
             cmbLowPassFilter.SelectedIndex = nIdxLowPassCombo;
             cmbHighPassFilter.SelectedIndex = nIdxHighPassCombo;
@@ -152,7 +168,7 @@ namespace SciChartExamlpeOne
 
         #endregion
 
-        #region SciChart
+#region SciChart
         private void onLoaded(object sender, RoutedEventArgs routedEventArgs) {
             // Instantiate the ViewportManager here
             //sciChartSurface.ViewportManager = new ScrollingViewportManager(nTimeDataRange);
@@ -189,35 +205,102 @@ namespace SciChartExamlpeOne
 
         private void TimerElapsed(object sender, EventArgs e)
         {
+            // SuspendUpdates() ensures the chart is frozen
+            // while you do updates. This ensures best performance
+            int nLen = nDataPure.Count - Constants.BUFLENCHECK;
+            if (nLen <= 0)
+                return;
+
+            int idx = 0;
+            byte[] data = new byte[nLen];
+            using (_originalData.SuspendUpdates())
             {
-                // SuspendUpdates() ensures the chart is frozen
-                // while you do updates. This ensures best performance
-                using (_originalData.SuspendUpdates())
+                while (nDataPure.Count > Constants.BUFLENCHECK)
                 {
-                    while (nDataPure.Count > Constants.BUFLENCHECK)
+                    // Append a new data point;
+                    Int32 localvalue;
+                    if (nDataPure.TryDequeue(out localvalue))
                     {
-                        // Append a new data point;
-                        Int32 localvalue;
-                        if (nDataPure.TryDequeue(out localvalue))
-                        {
-                            _originalData.Append(_sci_timeIndex.getIndex_double(), localvalue);
-                            _filterData.Append(_sci_timeIndex.getIndex_double(), localvalue);
-                            _sci_timeIndex.Increment();
-                        }
-                        //scatterData.Append(i, Math.Cos(i * 0.1));
+                        data[idx] = (byte) localvalue;
+                        idx++;
+                        _originalData.Append(_sci_timeIndex.getIndex_double(), (double)localvalue / (double) _adc_ConvertNum2Value.ToDouble());
+                        _filterData.Append(_sci_timeIndex.getIndex_double(), (double)localvalue / _adc_ConvertNum2Value.ToDouble());
+                        _sci_timeIndex.Increment();
                     }
-
-                    // Set VisibleRange to last 1,000 points
-                    sciChartSurface.XAxis.VisibleRange = new DoubleRange(_sci_timeIndex.getIndex_double() - _sci_timeIndex.getVisibleRange_double(), _sci_timeIndex.getIndex_double());
-
+                    //scatterData.Append(i, Math.Cos(i * 0.1));
                 }
+                // Set VisibleRange to last 1,000 points
+                sciChartSurface.XAxis.VisibleRange = new DoubleRange(_sci_timeIndex.getIndex_double() - _sci_timeIndex.getVisibleRange_double(), _sci_timeIndex.getIndex_double());
             }
+
+#if SOUNDPLAYENABLE
+            if(_snd_isPlaying)
+            {
+                _snd_bufferedWaveProvider.AddSamples(data, 0, nLen);
+            }
+#endif
         }
 
         private void numVoltDiv_ValueChanged(object sender, RoutedPropertyChangedEventArgs<decimal> e)
         {
-            decimal nHighLimit = numVoltDiv.Value * 1000 ;
-            sciChartSurface.YAxis.VisibleRange = new DoubleRange(-nHighLimit.ToDouble()/2.0, nHighLimit.ToDouble()/2.0);    
+            decimal nHighLimit = numVoltDiv.Value; // * 1000 ;
+            sciChartSurface.YAxis.VisibleRange = new DoubleRange(-nHighLimit.ToDouble()/2.0, nHighLimit.ToDouble()/2.0);
+            
+            if ((bool)cbxAutoGain.IsChecked)
+                if (_com_serial.IsOpen)
+                {
+                    int G1, G2;
+                    CalcGains(out G1, out G2);
+                    SendCommand(Constants.CMD_GAIN, G1, G2);
+                    _adc_ConvertNum2Value = GetAdcCoef();
+                }
+        }
+
+        private decimal CalcGains(out int nG1, out int nG2) {
+            decimal MinG = Properties.Settings.Default.HWGAIN ;
+            decimal MaxG = MinG * 10000;
+
+            decimal vdiv = numVoltDiv.Value ;
+            decimal G = Properties.Settings.Default.ADCREF / vdiv ;
+            decimal G1, G2;
+            G1 = 0;
+            G2 = 0;
+
+            if (G > MaxG)
+                G = MaxG;
+            if (G < MinG)
+                G = MinG;
+
+            G /= Properties.Settings.Default.HWGAIN ;
+
+
+            G1 = (decimal) Math.Sqrt(G.ToDouble());
+
+            int n1, n2;
+            
+            n1 = (int) Math.Round(-256.0104M / G1 + 256.0052M, 0);
+            if (n1 < 0)
+                n1 = 0;
+            else if (n1 > 255)
+                n1 = 255;
+            G1 = 1.0M + ((decimal)n1 + 52.0M / 10e3M) / (256.0M - (decimal) n1 + 52.0M / 10e3M);
+
+            G2 = G / G1;
+            n2 = (int)Math.Round(256.0104M / G2 - 0.0052M, 0);
+            if (n2 < 0)
+                n2 = 0;
+            else if (n2 > 255)
+                n2 = 255;
+            G2 = 1.0M + (256.0M - (decimal) n2 + 52.0M / 10e3M) / ((decimal)n2 + 52.0M / 10e3M);
+
+            nG1 = n1;
+            nG2 = n2;
+
+            return G1 * G2 * Properties.Settings.Default.HWGAIN / Properties.Settings.Default.SWGAIN;
+        }
+
+        private decimal GetAdcCoef() {
+            return CalcGains(out _, out _) * (decimal) ( 1 << Properties.Settings.Default.ADCBITNUM ) / (decimal) Properties.Settings.Default.ADCREF ;
         }
 
         private void numTimeDiv_ValueChanged(object sender, RoutedPropertyChangedEventArgs<decimal> e)
@@ -246,9 +329,83 @@ namespace SciChartExamlpeOne
             _filterData.isNotchEnable = (bool) cbxNotch.IsChecked;
         }
 
+#endregion
+
+#region Sound Play
+
+        private void Command_btn_Click_Sound(object sender, RoutedEventArgs e)
+        {
+            int nLen = 4800;
+            byte[] data = new byte[nLen];
+            for (int i = 0; i < nLen; i++)
+                data[i] = (byte)(Math.Cos(2.0 * Math.PI * (double)i / (double)nLen * 5.0) * 255.0);
+            //SoundPlayer.WriteSamples(data, nLen);
+            //mainInit();
+        }
+
+        private void InitSoundPlayer(int _SmplRate, int nNoChannels, int nBytePerSample)
+        {
+            int _AvgBytesPerSec = nNoChannels * _SmplRate * nBytePerSample;
+            int _BlockAlign = nNoChannels * nBytePerSample;
+
+            WaveFormat _format = WaveFormat.CreateCustomFormat(WaveFormatEncoding.Pcm,
+                    _SmplRate, nNoChannels, _AvgBytesPerSec, _BlockAlign, (nBytePerSample * 8));
+
+            // set up our signal chain
+            _snd_bufferedWaveProvider = new BufferedWaveProvider(_format);
+
+            // set up playback
+            _snd_player = new WaveOut();
+            _snd_player.Init(_snd_bufferedWaveProvider);
+
+            StartSoundServices();
+        }
+
+        private void StartSoundServices()
+        {
+            _snd_player.Play();
+            _snd_isPlaying = true;
+        }
+
+        private void StopSoundServices()
+        {
+            _snd_isPlaying = false;
+            _snd_player.Stop();
+        }
+
+        //For use when 24bit data sampling is achieved
+        private void ConvertToWave(Int32[] samples, int nBitsPerData, int nBitsPerSample, out byte[] byteBuffer)
+        {
+            UInt32 sample4Byte;
+            int nShifts = 1 << (sizeof(Int32) * 8 - nBitsPerData);
+            byteBuffer = new byte[samples.Length * (nBitsPerSample / 8)];
+            for (uint i = 0; i < samples.Length; i++)
+            {
+                Int32 intSample = (Int32)(samples[i] * nShifts);
+                sample4Byte = (UInt32)samples[i];
+                uint byteBufIndex = 0;
+
+                switch (nBitsPerSample)
+                {
+                    case 24 :
+                        byteBuffer[byteBufIndex++] = (byte)(sample4Byte >> 8);
+                        byteBuffer[byteBufIndex++] = (byte)(sample4Byte >> 16);
+                        byteBuffer[byteBufIndex++] = (byte)(sample4Byte >> 24);
+                        break;
+                    case 16 :
+                        byteBuffer[byteBufIndex++] = (byte)(sample4Byte >> 16);
+                        byteBuffer[byteBufIndex++] = (byte)(sample4Byte >> 24);
+                        break;
+                    case 8:
+                        byteBuffer[byteBufIndex++] = (byte)(sample4Byte >> 24);
+                        break;
+                }
+            }
+        }
+
         #endregion
 
-        #region COM CONNECTION
+#region COM CONNECTION
         private void Connect_Comm(object sender, RoutedEventArgs e)
         { 
             if (_com_bConnectionStatus == false)
@@ -301,7 +458,7 @@ namespace SciChartExamlpeOne
             //if (bIsCloseProgram) Dispatcher.Invoke(new EventHandler(NowClose)) ;
         }
 
-        #region Receive Data
+#region Receive Data
 
         private delegate void UpdateUiTextDelegate(string text);
         private void Recieve(object sender, System.IO.Ports.SerialDataReceivedEventArgs e)
@@ -356,9 +513,9 @@ namespace SciChartExamlpeOne
             //lblComDataReceived.Text = nTotPacketRecieved.ToString();   //nDataPure.Count.ToString();
         }
 
-        #endregion
+#endregion
 
-        #region Send Data
+#region Send Data
         private void SendCommand(Byte Cmd, Int32 _param1=0, Int32 _param2=0, Int32 _param3=0, Int32 _param4=0) {
 
             if (_com_serial.IsOpen)
@@ -380,7 +537,7 @@ namespace SciChartExamlpeOne
                 }
                 catch (Exception ex)
                 {
-                    //
+                    _ = ex;
                 }
             }
         }
@@ -428,11 +585,11 @@ namespace SciChartExamlpeOne
             _com_connecttimer.Start();
         }
 
-        #endregion
+#endregion
 
-        #endregion
+#endregion
 
-        #region Closing Routine
+#region Closing Routine
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
@@ -449,6 +606,7 @@ namespace SciChartExamlpeOne
             {
                 ComPortClose();
             }
+            StopSoundServices();
         }
 
         #endregion

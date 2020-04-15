@@ -7,6 +7,7 @@
         xmlns:local="clr-namespace:SciChartExamlpeOne"
         mc:Ignorable="d"
         Closing="Window_Closing"
+        Loaded="Window_Loaded"
         Title="{Binding strTitle}" Height="450" Width="800">
 
     <Window.Resources>
@@ -117,6 +118,7 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -126,8 +128,8 @@
             <TextBlock Grid.Column="2" Text="CONNECTION SPEED" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,0,20,0" />
             <ComboBox Grid.Column="3" SelectedIndex="8" x:Name="Baud_Rates" HorizontalAlignment="Stretch" ItemsSource="{Binding Source={StaticResource ComSpeed}}" />
             <Button Grid.Column="4" HorizontalAlignment="Center" Content="Connect" x:Name="Connect_btn" Click="Connect_Comm"  Width="70" Margin="20,0,20,0"/>
-            <Button Grid.Column="5" HorizontalAlignment="Center" Content="Command" x:Name="Command_btn" Click="Command_btn_Click"  Width="70" Margin="20,0,20,0"/>
-
+            <Button Grid.Column="5" HorizontalAlignment="Center" Content="Command" x:Name="Command_btn" Click="Command_btn_Click_Sound"  Width="70" Margin="20,0,20,0"/>
+            <CheckBox Grid.Column="6" VerticalAlignment="Center" HorizontalAlignment="Center" IsChecked="True" x:Name="cbxAutoGain" Content="Device Auto Gain Set" />
         </Grid>
 
         <!-- Add StatusBar -->

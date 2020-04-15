@@ -58,7 +58,7 @@ namespace SciChartExamlpeOne.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("40")]
+        [global::System.Configuration.DefaultSettingValueAttribute("50")]
         public int RREFRESHFPS {
             get {
                 return ((int)(this["RREFRESHFPS"]));
@@ -86,6 +86,45 @@ namespace SciChartExamlpeOne.Properties {
             }
             set {
                 this["VOLTDIV"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
+        public decimal SWGAIN {
+            get {
+                return ((decimal)(this["SWGAIN"]));
+            }
+            set {
+                this["SWGAIN"] = value;
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("60")]
+        public decimal HWGAIN {
+            get {
+                return ((decimal)(this["HWGAIN"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("3.3")]
+        public decimal ADCREF {
+            get {
+                return ((decimal)(this["ADCREF"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("8")]
+        public int ADCBITNUM {
+            get {
+                return ((int)(this["ADCBITNUM"]));
             }
         }
     }
