@@ -4,44 +4,46 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:SciChartExamlpeOne"
+             xmlns:fa="http://schemas.fontawesome.io/icons/"
              mc:Ignorable="d" >
-    <Grid Background="Beige">
+    <Grid Background="Snow">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <!-- Settings Title -->
-        <Grid Height="40" Margin="0 0 0 20">
+        <Grid Height="40" Margin="0 2 0 2">
 
             <!-- Back button -->
-            <Button Height="40"
-                    Content="{StaticResource FontAwesomeArrowLeftIcon}"
-                    FontFamily="{StaticResource FontAwesome}"
-                    Foreground="{StaticResource ForegroundDarkBrush}"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Center"
-                    Command="{Binding CloseCommand}"
-                    />
+            <Button
+                x:Name="btnShowHide"
+                Background="Transparent"
+                BorderBrush="Transparent"
+                Height="40"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Width="38" Height="38">
+                        <fa:ImageAwesome Icon="ArrowCircleLeft" Margin="2,2,2,2" Foreground="DarkBlue"/>
+                        <TextBlock>My Folders</TextBlock>
+                    </StackPanel>
+            </Button>
 
             <!-- Settings header -->
-            <TextBlock FontSize="{StaticResource FontSizeLarge}"
-                       Foreground="{StaticResource ForegroundVeryDarkBrush}"
+            <TextBlock FontSize="25"
+                       Foreground="DarkBlue"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center">
-                <!-- Cog icon -->
-                <Run FontFamily="{StaticResource FontAwesome}"
-                     Text="{StaticResource FontAwesomeCogIcon}"
-                     Foreground="{StaticResource WordOrangeBrush}" />
-                <!-- Settings text -->
-                <Run Text="Settings"
-                     FontFamily="{StaticResource LatoRegular}" />
+                    <!-- Cog icon -->
+                    <fa:ImageAwesome Icon="Gear" Width="20" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="DarkBlue" />
+                    <!-- Settings text -->
+                    <Run Text="Settings" />
             </TextBlock>
 
         </Grid>
         <Grid Grid.Row="1"
-                  Width="700"
+                  MinWidth="700"
                   VerticalAlignment="Top"
-              Height="200"    
+                  MinHeight="200"    
               ></Grid>
 
     </Grid>

@@ -130,6 +130,7 @@ namespace SciChartExamlpeOne
 
         public MainWindow()
         {
+            DataContext = new BorderViewModel();
             InitializeComponent();
             InitComponents();
             this.Loaded += onLoaded;
@@ -164,6 +165,7 @@ namespace SciChartExamlpeOne
             _com_connecttimer.Interval = TimeSpan.FromMilliseconds(1000.0);
             _com_connecttimer.Tick += RefreshConnection;
             _com_connecttimer.Start();
+            setPage.btnShowHide.Click += SettingVisibilityChange;
         }
 
         #endregion
@@ -407,7 +409,10 @@ namespace SciChartExamlpeOne
 
 #region COM CONNECTION
         private void Connect_Comm(object sender, RoutedEventArgs e)
-        { 
+        {
+            if (Comm_Port_Names.Text.IsEmpty() )
+                return;
+
             if (_com_bConnectionStatus == false)
             {
                 //Sets up serial port
@@ -611,5 +616,11 @@ namespace SciChartExamlpeOne
 
         #endregion
 
+        #region Button Routins
+        private void SettingVisibilityChange(object sender, RoutedEventArgs e)
+        {
+            (DataContext as BorderViewModel).SettingVisible = (DataContext as BorderViewModel).SettingVisible == Visibility.Visible ? Visibility.Hidden : Visibility.Visible;
+        }
+        #endregion
     }
 }

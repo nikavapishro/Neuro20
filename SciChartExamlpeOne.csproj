@@ -53,6 +53,9 @@
     <ApplicationIcon>icons8_brain_3.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="FontAwesome.WPF, Version=4.7.0.37774, Culture=neutral, PublicKeyToken=0758b07a11a4f466, processorArchitecture=MSIL">
+      <HintPath>packages\FontAwesome.WPF.4.7.0.9\lib\net40\FontAwesome.WPF.dll</HintPath>
+    </Reference>
     <Reference Include="NAudio, Version=1.10.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\NAudio.1.10.0\lib\net35\NAudio.dll</HintPath>
     </Reference>
@@ -60,11 +63,12 @@
     <Reference Include="SciChart.Core, Version=6.0.1.12982, Culture=neutral, PublicKeyToken=b55dd9efe817e823, processorArchitecture=MSIL" />
     <Reference Include="SciChart.Data, Version=6.0.1.12982, Culture=neutral, PublicKeyToken=b55dd9efe817e823, processorArchitecture=MSIL" />
     <Reference Include="SciChart.Drawing, Version=6.0.1.12982, Culture=neutral, PublicKeyToken=b55dd9efe817e823, processorArchitecture=MSIL" />
-    <Reference Include="SharpDX, Version=4.2.0.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
-      <HintPath>packages\SharpDX.4.2.0\lib\net45\SharpDX.dll</HintPath>
+    <Reference Include="SciChart.Wpf.UI.Transitionz, Version=3.1.251.0, Culture=neutral, PublicKeyToken=8eea68d53aa73a83, processorArchitecture=MSIL">
+      <HintPath>packages\SciChart.Wpf.UI.Transitionz.3.1.251\lib\net452\SciChart.Wpf.UI.Transitionz.dll</HintPath>
     </Reference>
-    <Reference Include="SharpDX.DirectSound, Version=4.2.0.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
-      <HintPath>packages\SharpDX.DirectSound.4.2.0\lib\net45\SharpDX.DirectSound.dll</HintPath>
+    <Reference Include="SharpDX, Version=4.2.0.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL" />
+    <Reference Include="SharpDX.DirectSound">
+      <HintPath>packages\SharpDX.DirectSound.4.2.0\lib\net40\SharpDX.DirectSound.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -87,6 +91,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="BorderViewModel.cs" />
     <Compile Include="Command.cs" />
     <Compile Include="ConstantVariables.cs" />
     <Compile Include="FilterData.cs" />
