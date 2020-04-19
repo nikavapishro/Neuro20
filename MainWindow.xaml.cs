@@ -17,6 +17,7 @@ using System.Linq;
 using System.Windows.Media;
 using System.Windows.Interop;
 using NAudio.Wave;
+using System.Windows.Input;
 
 namespace SciChartExamlpeOne
 {
@@ -133,6 +134,7 @@ namespace SciChartExamlpeOne
             DataContext = new BorderViewModel();
             InitializeComponent();
             InitComponents();
+            StateChanged += MainWindowStateChangeRaised;
             this.Loaded += onLoaded;
             _com_bConnectionStatus = false;
             foreach (string strComName in SerialPort.GetPortNames()) {
@@ -140,6 +142,7 @@ namespace SciChartExamlpeOne
             }
             Comm_Port_Names.SelectedIndex = 0;
             WindowState = WindowState.Maximized;
+            MainWindowStateChangeRaised(null,null);
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -149,10 +152,60 @@ namespace SciChartExamlpeOne
             _adc_ConvertNum2Value = GetAdcCoef();
         }
 
+        #region Windows Chrome
+        // Can execute
+        private void CommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = true;
+        }
+
+        // Minimize
+        private void CommandBinding_Executed_Minimize(object sender, ExecutedRoutedEventArgs e)
+        {
+            SystemCommands.MinimizeWindow(this);
+        }
+
+        // Maximize
+        private void CommandBinding_Executed_Maximize(object sender, ExecutedRoutedEventArgs e)
+        {
+            SystemCommands.MaximizeWindow(this);
+        }
+
+        // Restore
+        private void CommandBinding_Executed_Restore(object sender, ExecutedRoutedEventArgs e)
+        {
+            SystemCommands.RestoreWindow(this);
+        }
+
+        // Close
+        private void CommandBinding_Executed_Close(object sender, ExecutedRoutedEventArgs e)
+        {
+            SystemCommands.CloseWindow(this);
+        }
+
+        // State change
+        private void MainWindowStateChangeRaised(object sender, EventArgs e)
+        {
+            if (WindowState == WindowState.Maximized)
+            {
+                MainWindowBorder.BorderThickness = new Thickness(8);
+                RestoreButton.Visibility = Visibility.Visible;
+                MaximizeButton.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                MainWindowBorder.BorderThickness = new Thickness(0);
+                RestoreButton.Visibility = Visibility.Collapsed;
+                MaximizeButton.Visibility = Visibility.Visible;
+            }
+        }
+        #endregion
+
         #region Initialize Components
         private void InitComponents()
         {
             this.Title = "Neuro 2014 EMG Test Suit";
+            strTitle.Text = "Neuro 2014 EMG Test Suit";
             lblComState.Text = "Disconnected";
             _snd_isPlaying = false;
             _sci_timeIndex = new TimeIndex();

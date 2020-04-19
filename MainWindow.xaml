@@ -10,6 +10,7 @@
         mc:Ignorable="d"
         Closing="Window_Closing"
         Loaded="Window_Loaded"
+        WindowStartupLocation="CenterScreen"
         Title="{Binding strTitle}" Height="450" Width="800">
 
     <Window.Resources>
@@ -19,165 +20,202 @@
         <XmlDataProvider x:Key="FilterHighPass" Source="DataConfig.xml" XPath="/Data/Filters/HighPass" />
     </Window.Resources>
 
-    <Grid> <!--Background="#222"-->
-        <!-- Add some RowDefinitions -->
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-        <local:SettingsControl  x:Name="setPage"
-                                Grid.Row="0" Grid.Column="0" Panel.ZIndex="1" Grid.RowSpan="4" Visibility="Hidden"
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="34" />
+    </WindowChrome.WindowChrome>
+
+    <Window.CommandBindings>
+        <CommandBinding Command="{x:Static SystemCommands.CloseWindowCommand}" CanExecute="CommandBinding_CanExecute" Executed="CommandBinding_Executed_Close" />
+        <CommandBinding Command="{x:Static SystemCommands.MaximizeWindowCommand}" CanExecute="CommandBinding_CanExecute" Executed="CommandBinding_Executed_Maximize" />
+        <CommandBinding Command="{x:Static SystemCommands.MinimizeWindowCommand}" CanExecute="CommandBinding_CanExecute" Executed="CommandBinding_Executed_Minimize" />
+        <CommandBinding Command="{x:Static SystemCommands.RestoreWindowCommand}" CanExecute="CommandBinding_CanExecute" Executed="CommandBinding_Executed_Restore" />
+    </Window.CommandBindings>
+
+    <Border  x:Name="MainWindowBorder" BorderBrush="LightCoral" BorderThickness="0"  Background="CadetBlue" >
+        <Grid x:Name="parentContainer" Background="LightBlue">
+            <Grid.RowDefinitions>
+                <RowDefinition Height ="Auto"/>
+                <RowDefinition Height ="*"/>
+            </Grid.RowDefinitions>
+            
+            <!--Window chrome-->
+            <Grid x:Name="TitelBar" Grid.Row="0" Height="30" Background="#41b1e1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+                    <!--App icon-->
+                    <Image Source="/Resources/favicon.ico" Width="18" Margin="2" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                    <TextBlock x:Name="strTitle" FontFamily="Arial" VerticalAlignment="Center" Margin="4 3 0 0" />
+                </StackPanel>
+                <Button Grid.Column="1"  Click="SettingVisibilityChange"  Style="{StaticResource CommandButtonStyle}"
+                        WindowChrome.IsHitTestVisibleInChrome="True" ToolTip="Settings">
+                    <fa:ImageAwesome Icon="Gear" Width="15" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="DarkBlue" />
+                </Button>
+                <!--Caption buttons-->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Style="{StaticResource MinimizeButtonStyle}" WindowChrome.IsHitTestVisibleInChrome="True" ToolTip="Minimize"
+                        Command="{x:Static SystemCommands.MinimizeWindowCommand}"/>
+                    <Button x:Name="RestoreButton" Visibility="Visible" Style="{StaticResource RestoreButtonStyle}" 
+                        Command="{x:Static SystemCommands.RestoreWindowCommand}" WindowChrome.IsHitTestVisibleInChrome="True" ToolTip="Restore"/>
+                    <Button x:Name="MaximizeButton" Visibility="Collapsed" Style="{StaticResource MaximizeButtonStyle}" 
+                        Command="{x:Static SystemCommands.MaximizeWindowCommand}" WindowChrome.IsHitTestVisibleInChrome="True" ToolTip="Maximize" />
+                    <Button Style="{StaticResource CloseButtonStyle}" WindowChrome.IsHitTestVisibleInChrome="True" ToolTip="Close"
+                        Command="{x:Static SystemCommands.CloseWindowCommand}"/>
+                </StackPanel>
+            </Grid>
+
+            <Grid Grid.Row="1" x:Name="AppArea">
+                <!--Background="#222"-->
+                <!-- Add some RowDefinitions -->
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <local:SettingsControl  x:Name="setPage"
+                                Grid.Row="0" Grid.Column="0" Panel.ZIndex="1" Grid.RowSpan="4" Visibility="Collapsed"
                                 tz:Transitionz.Opacity="{tz:OpacityParams From=0, To=1, Duration=200, TransitionOn=Visibility}"
                                 tz:Transitionz.Translate="{tz:TranslateParams From='10,0', To='0,0', Duration=200, TransitionOn=Visibility}"
                                 tz:Transitionz.Visibility="{Binding SettingVisible }"
                                 ></local:SettingsControl>
-        <!-- Oscope Settings -->
-        <Grid Grid.Row="0" Margin="10,0,10,0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="2*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="2*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="2*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="2*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-            <Button
-                Background="Transparent"
-                BorderBrush="Transparent"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Center"
-                Click="SettingVisibilityChange">
-                <StackPanel Orientation="Horizontal">
-                    <fa:ImageAwesome Icon="Gear" Width="20" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="DarkBlue" />
-                </StackPanel>
-            </Button>
+                <!-- Oscope Settings -->
+                <Grid Grid.Row="0" Margin="10,0,10,0" >
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <!--Time Division-->
+                    <TextBlock Grid.Column="0" Text="Time Division (s)" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,0,20,0"/>
+                    <local:NumericUpDown x:Name="numTimeDiv" Grid.Column="1" ValueChanged="numTimeDiv_ValueChanged"/>
+                    <!--Volt Division-->
+                    <TextBlock Grid.Column="2" Text="Volt Division (V)" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,0,20,0" />
+                    <local:NumericUpDown x:Name="numVoltDiv" Grid.Column="3" ValueChanged="numVoltDiv_ValueChanged"/>
+                    <!--Low Cut Filter-->
+                    <TextBlock Grid.Column="4" Text="Low Pass Filter" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,0,20,0"/>
+                    <ComboBox Grid.Column="5" Width="70" x:Name="cmbLowPassFilter" HorizontalAlignment="Stretch" SelectionChanged="cmbFilter_SelectionChanged" ItemsSource="{Binding Source={StaticResource FilterLowPass}}" />
+                    <!--High Cut Filter-->
+                    <TextBlock Grid.Column="6" Text="High Pass Filter" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,0,20,0"/>
+                    <ComboBox Grid.Column="7" Width="70" x:Name="cmbHighPassFilter" HorizontalAlignment="Stretch" SelectionChanged="cmbFilter_SelectionChanged" ItemsSource="{Binding Source={StaticResource FilterHighPass}}" />
+                    <!--Notch Filter-->
+                    <CheckBox Grid.Column="8" VerticalAlignment="Center" HorizontalAlignment="Center" IsChecked="False" x:Name="cbxNotch" Content="-(50Hz)" Unchecked="cbxNotch_Change" Checked="cbxNotch_Change" />
+                </Grid>
 
-            <!--Time Division-->
-            <TextBlock Grid.Column="1" Text="Time Division (s)" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,0,20,0"/>
-            <local:NumericUpDown x:Name="numTimeDiv" Grid.Column="2" ValueChanged="numTimeDiv_ValueChanged"/>
-            <!--Volt Division-->
-            <TextBlock Grid.Column="3" Text="Volt Division (V)" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,0,20,0" />
-            <local:NumericUpDown x:Name="numVoltDiv" Grid.Column="4" ValueChanged="numVoltDiv_ValueChanged"/>
-            <!--Low Cut Filter-->
-            <TextBlock Grid.Column="5" Text="Low Pass Filter" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,0,20,0"/>
-            <ComboBox Grid.Column="6" Width="70" x:Name="cmbLowPassFilter" HorizontalAlignment="Stretch" SelectionChanged="cmbFilter_SelectionChanged" ItemsSource="{Binding Source={StaticResource FilterLowPass}}" />
-            <!--High Cut Filter-->
-            <TextBlock Grid.Column="7" Text="High Pass Filter" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,0,20,0"/>
-            <ComboBox Grid.Column="8" Width="70" x:Name="cmbHighPassFilter" HorizontalAlignment="Stretch" SelectionChanged="cmbFilter_SelectionChanged" ItemsSource="{Binding Source={StaticResource FilterHighPass}}" />
-            <!--Notch Filter-->
-            <CheckBox Grid.Column="9" VerticalAlignment="Center" HorizontalAlignment="Center" IsChecked="False" x:Name="cbxNotch" Content="-(50Hz)" Unchecked="cbxNotch_Change" Checked="cbxNotch_Change" />
-        </Grid>
-
-        <!-- Create the chart surface -->
-        <!-- where xmlns:s="http://schemas.abtsoftware.co.uk/scichart" -->
-        <s:SciChartSurface Grid.Row="1" x:Name="sciChartSurface">
-            <!--Define Renderable Series-->
-            <s:SciChartSurface.RenderableSeries>
-                <s:FastLineRenderableSeries x:Name="LineSeries" Stroke="#FF4083B7"/>
-                <s:FastLineRenderableSeries x:Name="FilteredSeries" Stroke="LightBlue"/>
-            </s:SciChartSurface.RenderableSeries>
-            <!-- Create X-Axis -->
-            <s:SciChartSurface.XAxis>
-                <s:NumericAxis AxisTitle="Time (ms)" DrawMajorTicks="False" DrawMinorTicks="False"
+                <!-- Create the chart surface -->
+                <!-- where xmlns:s="http://schemas.abtsoftware.co.uk/scichart" -->
+                <s:SciChartSurface Grid.Row="1" x:Name="sciChartSurface">
+                    <!--Define Renderable Series-->
+                    <s:SciChartSurface.RenderableSeries>
+                        <s:FastLineRenderableSeries x:Name="LineSeries" Stroke="#FF4083B7"/>
+                        <s:FastLineRenderableSeries x:Name="FilteredSeries" Stroke="LightBlue"/>
+                    </s:SciChartSurface.RenderableSeries>
+                    <!-- Create X-Axis -->
+                    <s:SciChartSurface.XAxis>
+                        <s:NumericAxis AxisTitle="Time (ms)" DrawMajorTicks="False" DrawMinorTicks="False"
                                DrawMajorBands="False" DrawMajorGridLines="False" DrawMinorGridLines="False"
                                DrawLabels="True" AutoRange="Never" TextFormatting="0.00"/>
-            </s:SciChartSurface.XAxis>
-            <!--Create Y-Axis-->
-            <s:SciChartSurface.YAxis>
-                <s:NumericAxis AxisTitle="Value" AutoRange="Never" VisibleRange="0,256" GrowBy="0.1,0.1"/>
-            </s:SciChartSurface.YAxis>
-            <!--Define Modifiers-->
-            <s:SciChartSurface.ChartModifier>
-                <s:ModifierGroup>
-                    <!-- Allow drag to zoom on Left mouse -->
-                    <s:RubberBandXyZoomModifier ExecuteOn="MouseLeftButton"
+                    </s:SciChartSurface.XAxis>
+                    <!--Create Y-Axis-->
+                    <s:SciChartSurface.YAxis>
+                        <s:NumericAxis AxisTitle="Value" AutoRange="Never" VisibleRange="0,256" GrowBy="0.1,0.1"/>
+                    </s:SciChartSurface.YAxis>
+                    <!--Define Modifiers-->
+                    <s:SciChartSurface.ChartModifier>
+                        <s:ModifierGroup>
+                            <!-- Allow drag to zoom on Left mouse -->
+                            <s:RubberBandXyZoomModifier ExecuteOn="MouseLeftButton"
                                                 RubberBandFill="#33FFFFFF" RubberBandStroke="#AAFFFFFF"
                                                 RubberBandStrokeDashArray="2 2"/>
-                    <!-- Allow Zoom to Extents on double click -->
-                    <s:ZoomExtentsModifier ExecuteOn="MouseDoubleClick" />
-                    <!-- Allow pan on Right mouse drag -->
-                    <s:ZoomPanModifier ExecuteOn="MouseRightButton" ClipModeX="None" />
-                    <!-- Allow Dragging YAxis to Scale -->
-                    <s:YAxisDragModifier DragMode="Scale"/>
-                    <!-- Allow Dragging XAxis to Pan -->
-                    <s:XAxisDragModifier DragMode="Pan"/>
-                    <!-- Allow Mousewheel Zoom -->
-                    <s:MouseWheelZoomModifier/>
+                            <!-- Allow Zoom to Extents on double click -->
+                            <s:ZoomExtentsModifier ExecuteOn="MouseDoubleClick" />
+                            <!-- Allow pan on Right mouse drag -->
+                            <s:ZoomPanModifier ExecuteOn="MouseRightButton" ClipModeX="None" />
+                            <!-- Allow Dragging YAxis to Scale -->
+                            <s:YAxisDragModifier DragMode="Scale"/>
+                            <!-- Allow Dragging XAxis to Pan -->
+                            <s:XAxisDragModifier DragMode="Pan"/>
+                            <!-- Allow Mousewheel Zoom -->
+                            <s:MouseWheelZoomModifier/>
 
-                    <s:LegendModifier ShowLegend="True" Orientation="Horizontal"
+                            <s:LegendModifier ShowLegend="True" Orientation="Horizontal"
                                        VerticalAlignment="Bottom"                                     
                                        HorizontalAlignment="Center"
                                        LegendPlacement="Inside" />
-                    <!-- Add a RolloverModifier to the chart (shows vertical line tooltips -->
-                    <s:RolloverModifier ExecuteOn="MouseMove" ShowTooltipOn="MouseHover"/>
+                            <!-- Add a RolloverModifier to the chart (shows vertical line tooltips -->
+                            <s:RolloverModifier ExecuteOn="MouseMove" ShowTooltipOn="MouseHover"/>
 
-                </s:ModifierGroup>
-            </s:SciChartSurface.ChartModifier>
-        </s:SciChartSurface>
+                        </s:ModifierGroup>
+                    </s:SciChartSurface.ChartModifier>
+                </s:SciChartSurface>
 
-        <!-- Add a Scrollbar, and bind to SciChartSurface.XAxis -->
-        <s:SciChartScrollbar Grid.Row="2" Axis="{Binding ElementName=sciChartSurface, Path=XAxis}"/>
+                <!-- Add a Scrollbar, and bind to SciChartSurface.XAxis -->
+                <s:SciChartScrollbar Grid.Row="2" Axis="{Binding ElementName=sciChartSurface, Path=XAxis}"/>
 
-        <!-- COM Port Connection -->
-        <Grid Background="#FFF" Grid.Row="3">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-            <TextBlock Text="COM PORT NAME" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,0,20,0"/>
-            <ComboBox Grid.Column="1" x:Name="Comm_Port_Names" HorizontalAlignment="Stretch" />
-            <TextBlock Grid.Column="2" Text="CONNECTION SPEED" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,0,20,0" />
-            <ComboBox Grid.Column="3" SelectedIndex="8" x:Name="Baud_Rates" HorizontalAlignment="Stretch" ItemsSource="{Binding Source={StaticResource ComSpeed}}" />
-            <Button Grid.Column="4" HorizontalAlignment="Center" Content="Connect" x:Name="Connect_btn" Click="Connect_Comm"  Width="70" Margin="20,0,20,0"/>
-            <Button Grid.Column="5" HorizontalAlignment="Center" Content="Command" x:Name="Command_btn" Click="Command_btn_Click_Sound"  Width="70" Margin="20,0,20,0"/>
-            <CheckBox Grid.Column="6" VerticalAlignment="Center" HorizontalAlignment="Center" IsChecked="True" x:Name="cbxAutoGain" Content="Device Auto Gain Set" />
+                <!-- COM Port Connection -->
+                <Grid Background="#FFF" Grid.Row="3">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="COM PORT NAME" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,0,20,0"/>
+                    <ComboBox Grid.Column="1" x:Name="Comm_Port_Names" HorizontalAlignment="Stretch" />
+                    <TextBlock Grid.Column="2" Text="CONNECTION SPEED" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,0,20,0" />
+                    <ComboBox Grid.Column="3" SelectedIndex="8" x:Name="Baud_Rates" HorizontalAlignment="Stretch" ItemsSource="{Binding Source={StaticResource ComSpeed}}" />
+                    <Button Grid.Column="4" HorizontalAlignment="Center" Content="Connect" x:Name="Connect_btn" Click="Connect_Comm"  Width="70" Margin="20,0,20,0"/>
+                    <Button Grid.Column="5" HorizontalAlignment="Center" Content="Command" x:Name="Command_btn" Click="Command_btn_Click_Sound"  Width="70" Margin="20,0,20,0"/>
+                    <CheckBox Grid.Column="6" VerticalAlignment="Center" HorizontalAlignment="Center" IsChecked="True" x:Name="cbxAutoGain" Content="Device Auto Gain Set" />
+                </Grid>
+
+                <!-- Add StatusBar -->
+                <StatusBar Grid.Row="4" >
+                    <StatusBar.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="4*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                            </Grid>
+                        </ItemsPanelTemplate>
+                    </StatusBar.ItemsPanel>
+                    <StatusBarItem>
+                        <TextBlock Name="lblComState" />
+                    </StatusBarItem>
+                    <StatusBarItem Grid.Column="2">
+                        <TextBlock x:Name="lblStatus">Connection Speed [KB]</TextBlock>
+                    </StatusBarItem>
+                    <StatusBarItem Grid.Column="3">
+                        <TextBlock x:Name="lblComDataReceived" />
+                    </StatusBarItem>
+                </StatusBar>
+            </Grid>
         </Grid>
-
-        <!-- Add StatusBar -->
-        <StatusBar Grid.Row="4" >
-            <StatusBar.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="4*"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                    </Grid>
-                </ItemsPanelTemplate>
-            </StatusBar.ItemsPanel>
-            <StatusBarItem>
-                <TextBlock Name="lblComState" />
-            </StatusBarItem>
-            <StatusBarItem Grid.Column="2">
-                <TextBlock x:Name="lblStatus">Connection Speed [KB]</TextBlock>
-            </StatusBarItem>
-            <StatusBarItem Grid.Column="3">
-                <TextBlock x:Name="lblComDataReceived" />
-            </StatusBarItem>
-        </StatusBar>
-    </Grid>
-
+    </Border>
 </Window>

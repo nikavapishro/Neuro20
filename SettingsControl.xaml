@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:SciChartExamlpeOne"
              xmlns:fa="http://schemas.fontawesome.io/icons/"
              mc:Ignorable="d" >
-    <Grid Background="Snow">
+    <Grid Background="WhiteSmoke">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -24,7 +24,6 @@
                 VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal" Width="38" Height="38">
                         <fa:ImageAwesome Icon="ArrowCircleLeft" Margin="2,2,2,2" Foreground="DarkBlue"/>
-                        <TextBlock>My Folders</TextBlock>
                     </StackPanel>
             </Button>
 
@@ -40,11 +39,50 @@
             </TextBlock>
 
         </Grid>
-        <Grid Grid.Row="1"
+        <Grid x:Name="SettingsMenus" Grid.Row="1"
                   MinWidth="700"
                   VerticalAlignment="Top"
-                  MinHeight="200"    
-              ></Grid>
+                  MinHeight="200">
+            <local:STabControl 
+                TabStripPlacement="Left" 
+                DockPanel.Dock="Left" 
+                Margin="5 0" 
+                >
+                <local:STabItem x:Name="Graphics">
+                    <local:STabItem.Header>
+                        <TextBlock Text="Graphics"/>
+                    </local:STabItem.Header>
+                    This is a graphic test
+                </local:STabItem>
+                <local:STabItem  x:Name="Connections">
+                    <local:STabItem.Header>
+                        <TextBlock Text="Connections" />
+                    </local:STabItem.Header>
+                </local:STabItem>
+                <local:STabItem  x:Name="Preferences">
+                    <local:STabItem.Header>
+                        <TextBlock Text="Preferences" />
+                    </local:STabItem.Header>
+                </local:STabItem>
+                <local:STabItem x:Name="Tools">
+                    <local:STabItem.Header>
+                        <TextBlock Text="Tools" />
+                    </local:STabItem.Header>
+                </local:STabItem>
+                <local:STabItem x:Name="AutoReport">
+                    <local:STabItem.Header>
+                        <TextBlock Text="Auto Report" />
+                    </local:STabItem.Header>
+                </local:STabItem>
+                <local:STabItem x:Name="Contact">
+                    <local:STabItem.Header>
+                        <TextBlock Text="Contact" />
+                    </local:STabItem.Header>
+                </local:STabItem>
+            </local:STabControl>
+
+
+        </Grid>
 
     </Grid>
 </UserControl>
