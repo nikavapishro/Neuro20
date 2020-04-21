@@ -14,8 +14,6 @@
         Title="{Binding strTitle}" Height="450" Width="800">
 
     <Window.Resources>
-        <XmlDataProvider x:Key="ComPorts" Source="DataConfig.xml" XPath="/Data/Comms/Ports" />
-        <XmlDataProvider x:Key="ComSpeed" Source="DataConfig.xml" XPath="/Data/Comms/Baud" />
         <XmlDataProvider x:Key="FilterLowPass" Source="DataConfig.xml" XPath="/Data/Filters/LowPass" />
         <XmlDataProvider x:Key="FilterHighPass" Source="DataConfig.xml" XPath="/Data/Filters/HighPass" />
     </Window.Resources>
@@ -75,16 +73,15 @@
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
-                <local:SettingsControl  x:Name="setPage"
+                <local:SettingsControl Opacity="0.8" d:IsHidden="True"  x:Name="setPage"
                                 Grid.Row="0" Grid.Column="0" Panel.ZIndex="1" Grid.RowSpan="4" Visibility="Collapsed"
                                 tz:Transitionz.Opacity="{tz:OpacityParams From=0, To=1, Duration=200, TransitionOn=Visibility}"
                                 tz:Transitionz.Translate="{tz:TranslateParams From='10,0', To='0,0', Duration=200, TransitionOn=Visibility}"
                                 tz:Transitionz.Visibility="{Binding SettingVisible }"
                                 ></local:SettingsControl>
                 <!-- Oscope Settings -->
-                <Grid Grid.Row="0" Margin="10,0,10,0" >
+                <Grid Grid.Row="0" Margin="10,0,10,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="2*"/>
                         <ColumnDefinition Width="*"/>
@@ -93,6 +90,7 @@
                         <ColumnDefinition Width="2*"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
@@ -113,6 +111,8 @@
                     <ComboBox Grid.Column="7" Width="70" x:Name="cmbHighPassFilter" HorizontalAlignment="Stretch" SelectionChanged="cmbFilter_SelectionChanged" ItemsSource="{Binding Source={StaticResource FilterHighPass}}" />
                     <!--Notch Filter-->
                     <CheckBox Grid.Column="8" VerticalAlignment="Center" HorizontalAlignment="Center" IsChecked="False" x:Name="cbxNotch" Content="-(50Hz)" Unchecked="cbxNotch_Change" Checked="cbxNotch_Change" />
+                    <!--Notch Filter-->
+                    <CheckBox Grid.Column="9" VerticalAlignment="Center" HorizontalAlignment="Center" IsChecked="True" x:Name="cbxSound" Content="Sound" Unchecked="cbxSound_Change" Checked="cbxSound_Change" />
                 </Grid>
 
                 <!-- Create the chart surface -->
@@ -165,31 +165,8 @@
                 <!-- Add a Scrollbar, and bind to SciChartSurface.XAxis -->
                 <s:SciChartScrollbar Grid.Row="2" Axis="{Binding ElementName=sciChartSurface, Path=XAxis}"/>
 
-                <!-- COM Port Connection -->
-                <Grid Background="#FFF" Grid.Row="3">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    <TextBlock Text="COM PORT NAME" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,0,20,0"/>
-                    <ComboBox Grid.Column="1" x:Name="Comm_Port_Names" HorizontalAlignment="Stretch" />
-                    <TextBlock Grid.Column="2" Text="CONNECTION SPEED" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,0,20,0" />
-                    <ComboBox Grid.Column="3" SelectedIndex="8" x:Name="Baud_Rates" HorizontalAlignment="Stretch" ItemsSource="{Binding Source={StaticResource ComSpeed}}" />
-                    <Button Grid.Column="4" HorizontalAlignment="Center" Content="Connect" x:Name="Connect_btn" Click="Connect_Comm"  Width="70" Margin="20,0,20,0"/>
-                    <Button Grid.Column="5" HorizontalAlignment="Center" Content="Command" x:Name="Command_btn" Click="Command_btn_Click_Sound"  Width="70" Margin="20,0,20,0"/>
-                    <CheckBox Grid.Column="6" VerticalAlignment="Center" HorizontalAlignment="Center" IsChecked="True" x:Name="cbxAutoGain" Content="Device Auto Gain Set" />
-                </Grid>
-
                 <!-- Add StatusBar -->
-                <StatusBar Grid.Row="4" >
+                <StatusBar Grid.Row="3" >
                     <StatusBar.ItemsPanel>
                         <ItemsPanelTemplate>
                             <Grid>
@@ -208,10 +185,10 @@
                     <StatusBarItem>
                         <TextBlock Name="lblComState" />
                     </StatusBarItem>
-                    <StatusBarItem Grid.Column="2">
-                        <TextBlock x:Name="lblStatus">Connection Speed [KB]</TextBlock>
+                    <StatusBarItem Grid.Column="2" HorizontalAlignment="Right">
+                        <TextBlock x:Name="lblStatus" >Connection Speed [KB]</TextBlock>
                     </StatusBarItem>
-                    <StatusBarItem Grid.Column="3">
+                    <StatusBarItem Grid.Column="3" HorizontalAlignment="Left">
                         <TextBlock x:Name="lblComDataReceived" />
                     </StatusBarItem>
                 </StatusBar>

@@ -14,6 +14,8 @@ namespace SciChartExamlpeOne
         public const int BUFLENCHECK = (HDRLEN + FRMLEN) * 2;
         public const string HDRSTR = "\xFF\x00\xFE\x01\xFD";
 
+        public const int DEFAULTBAUD = (460800);
+
         //COMMAND
         public const byte CMD_LIVE = 0x11;
         public const byte CMD_SHOCK = 0x33;

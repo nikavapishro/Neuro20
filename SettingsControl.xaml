@@ -4,9 +4,26 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:SciChartExamlpeOne"
-             xmlns:fa="http://schemas.fontawesome.io/icons/"
+             xmlns:fa="http://schemas.fontawesome.io/icons/" 
              mc:Ignorable="d" >
-    <Grid Background="WhiteSmoke">
+    <UserControl.Resources>
+        <XmlDataProvider x:Key="ComSpeed" Source="DataConfig.xml" XPath="/Data/Comms/Baud" />
+        <Style  x:Key="Margin">
+            <Setter Property="Control.Margin" Value="10"></Setter>
+        </Style>
+        <Style TargetType="StackPanel" x:Key="StackStyle">
+            <Style.Resources>
+                <Style TargetType="TextBlock" BasedOn="{StaticResource Margin}"></Style>
+                <Style TargetType="Button" BasedOn="{StaticResource Margin}"></Style>
+                <Style TargetType="TextBox" BasedOn="{StaticResource Margin}"></Style>
+                <Style TargetType="ComboBox" BasedOn="{StaticResource Margin}"></Style>
+                <Style TargetType="CheckBox" BasedOn="{StaticResource Margin}"></Style>
+                <Style TargetType="Label" BasedOn="{StaticResource Margin}"></Style>
+                <Style TargetType="Slider" BasedOn="{StaticResource Margin}"></Style>
+            </Style.Resources>
+        </Style>
+    </UserControl.Resources>
+    <Grid Background="WhiteSmoke" >
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -52,12 +69,40 @@
                     <local:STabItem.Header>
                         <TextBlock Text="Graphics"/>
                     </local:STabItem.Header>
-                    This is a graphic test
+                    <StackPanel x:Name="mnuGraphic" >
+                        <StackPanel Margin="10" Orientation="Horizontal">
+                            <Label Foreground="Black" Content="Refresh Rate of Screen" />
+                            <Slider  VerticalAlignment="Center" Width="100" Maximum="50" Minimum="10" x:Name="sldRefreshFPS" Margin="10 0"
+                                     IsSnapToTickEnabled="True"
+                                     TickFrequency="1"/>
+                            <Label Content="{Binding ElementName=sldRefreshFPS, Path=Value, UpdateSourceTrigger=PropertyChanged}" />
+                            <Label Content=" FPS"/>
+                        </StackPanel>
+                        <StackPanel Margin="10" Orientation="Horizontal">
+                            <CheckBox x:Name="cbxSweepGraph" HorizontalAlignment="Center" Style="{StaticResource ToggleSwitchStyle}" VerticalAlignment="Center">
+                                <TextBlock Margin="0 0 10 0">Sweep Graph</TextBlock>
+                            </CheckBox>
+                        </StackPanel>
+                    </StackPanel>
                 </local:STabItem>
                 <local:STabItem  x:Name="Connections">
                     <local:STabItem.Header>
                         <TextBlock Text="Connections" />
                     </local:STabItem.Header>
+                    <StackPanel x:Name="mnuConnections" Margin="10" Style="{StaticResource StackStyle}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="COM PORT Number" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="20,0,20,0"/>
+                            <ComboBox x:Name="cmbComportName" HorizontalAlignment="Stretch" MinWidth="100" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="CONNECTION SPEED" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,0,20,0" />
+                            <ComboBox SelectedIndex="8" x:Name="cmbBaudRate" HorizontalAlignment="Stretch" MinWidth="100" ItemsSource="{Binding Source={StaticResource ComSpeed}}" SelectedValue="{Binding ComSpeed}" />
+                            
+                        </StackPanel>
+                        <Button HorizontalAlignment="Center" Content="Connect" x:Name="btnConnect"  Width="70"/>
+                        <Button HorizontalAlignment="Center" Content="Command" x:Name="btnCommand"  Width="70"/>
+                        <CheckBox VerticalAlignment="Center" HorizontalAlignment="Center" IsChecked="True" x:Name="cbxAutoGain" Content="Device Auto Gain Set" />
+                    </StackPanel>
                 </local:STabItem>
                 <local:STabItem  x:Name="Preferences">
                     <local:STabItem.Header>

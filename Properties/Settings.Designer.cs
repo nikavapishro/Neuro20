@@ -56,12 +56,15 @@ namespace SciChartExamlpeOne.Properties {
             }
         }
         
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("20")]
         public int RREFRESHFPS {
             get {
                 return ((int)(this["RREFRESHFPS"]));
+            }
+            set {
+                this["RREFRESHFPS"] = value;
             }
         }
         
@@ -125,6 +128,42 @@ namespace SciChartExamlpeOne.Properties {
         public int ADCBITNUM {
             get {
                 return ((int)(this["ADCBITNUM"]));
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool SWEEPGRAPH {
+            get {
+                return ((bool)(this["SWEEPGRAPH"]));
+            }
+            set {
+                this["SWEEPGRAPH"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string COMPORTNAME {
+            get {
+                return ((string)(this["COMPORTNAME"]));
+            }
+            set {
+                this["COMPORTNAME"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int COMPORTBAUD {
+            get {
+                return ((int)(this["COMPORTBAUD"]));
+            }
+            set {
+                this["COMPORTBAUD"] = value;
             }
         }
     }

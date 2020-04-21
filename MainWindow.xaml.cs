@@ -94,8 +94,14 @@ namespace SciChartExamlpeOne
         #region variables
         public decimal _adc_ConvertNum2Value;
 
-        public IntPtr Handle;
+        #region save holders
+        private int _save_RefreshValue;
+        private bool _save_SweepGraph;
+        private string _save_ComportName;
+        private int _save_ComportBaud;
+        #endregion
 
+        #region Com port
         SerialPort _com_serial = new SerialPort();
         private DispatcherTimer _com_connecttimer;
         bool _com_bConnectionStatus = false;
@@ -104,10 +110,14 @@ namespace SciChartExamlpeOne
         bool _com_online = false;
         static StringBuilder _com_bufReceiedData = new StringBuilder() ;
         public ConcurrentQueue<Int32> nDataPure = new ConcurrentQueue<Int32>() ;
+        #endregion
 
         #region Sound Player
         private BufferedWaveProvider _snd_bufferedWaveProvider;
+        public ConcurrentQueue<Int32> nSoundPure = new ConcurrentQueue<Int32>();
+        private DispatcherTimer _snd_playtimer;
         private WaveOut _snd_player;
+        //private AsioOut _snd_AsioPlayer;
         private bool _snd_isPlaying;
         #endregion
 
@@ -133,22 +143,26 @@ namespace SciChartExamlpeOne
         {
             DataContext = new BorderViewModel();
             InitializeComponent();
+            LoadSettings();
             InitComponents();
             StateChanged += MainWindowStateChangeRaised;
+            LoadSettings();
             this.Loaded += onLoaded;
+            setPage.Loaded += SetPage_Loaded;
             _com_bConnectionStatus = false;
-            foreach (string strComName in SerialPort.GetPortNames()) {
-                Comm_Port_Names.Items.Add(strComName);
-            }
-            Comm_Port_Names.SelectedIndex = 0;
             WindowState = WindowState.Maximized;
             MainWindowStateChangeRaised(null,null);
         }
 
+        private void SetPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            LoadSettingContent();
+        }
+
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            Handle = new WindowInteropHelper(Application.Current.MainWindow).Handle;
             InitSoundPlayer(Properties.Settings.Default.SAMPLERATE, 1, 1);
+            cbxSound_Change(null, null);
             _adc_ConvertNum2Value = GetAdcCoef();
         }
 
@@ -207,6 +221,8 @@ namespace SciChartExamlpeOne
             this.Title = "Neuro 2014 EMG Test Suit";
             strTitle.Text = "Neuro 2014 EMG Test Suit";
             lblComState.Text = "Disconnected";
+            cbxSound.IsChecked = true;
+            cbxNotch.IsChecked = false;
             _snd_isPlaying = false;
             _sci_timeIndex = new TimeIndex();
             cmbLowPassFilter.SelectedIndex = nIdxLowPassCombo;
@@ -218,13 +234,21 @@ namespace SciChartExamlpeOne
             _com_connecttimer.Interval = TimeSpan.FromMilliseconds(1000.0);
             _com_connecttimer.Tick += RefreshConnection;
             _com_connecttimer.Start();
+            _snd_playtimer = new DispatcherTimer(DispatcherPriority.Normal);
+            _snd_playtimer.Interval = TimeSpan.FromMilliseconds(10.0);
+            _snd_playtimer.Tick += SoundPlayTimer;
+            _snd_playtimer.Start();
             setPage.btnShowHide.Click += SettingVisibilityChange;
+            setPage.btnConnect.Click += Connect_Comm;
+            setPage.btnCommand.Click += Command_btn_Click_Sound;
+
         }
 
         #endregion
 
 #region SciChart
         private void onLoaded(object sender, RoutedEventArgs routedEventArgs) {
+
             // Instantiate the ViewportManager here
             //sciChartSurface.ViewportManager = new ScrollingViewportManager(nTimeDataRange);
 
@@ -289,10 +313,10 @@ namespace SciChartExamlpeOne
             }
 
 #if SOUNDPLAYENABLE
-            if(_snd_isPlaying)
-            {
-                _snd_bufferedWaveProvider.AddSamples(data, 0, nLen);
-            }
+            //if (_snd_isPlaying)
+            //{
+            //    _snd_bufferedWaveProvider.AddSamples(data, 0, nLen);
+            //}
 #endif
         }
 
@@ -301,7 +325,7 @@ namespace SciChartExamlpeOne
             decimal nHighLimit = numVoltDiv.Value; // * 1000 ;
             sciChartSurface.YAxis.VisibleRange = new DoubleRange(-nHighLimit.ToDouble()/2.0, nHighLimit.ToDouble()/2.0);
             
-            if ((bool)cbxAutoGain.IsChecked)
+            if ((bool)setPage.cbxAutoGain.IsChecked)
                 if (_com_serial.IsOpen)
                 {
                     int G1, G2;
@@ -381,12 +405,12 @@ namespace SciChartExamlpeOne
 
         private void cbxNotch_Change(object sender, RoutedEventArgs e)
         {
-            _filterData.isNotchEnable = (bool) cbxNotch.IsChecked;
+            _filterData.isNotchEnable = (bool)cbxNotch.IsChecked;
         }
 
-#endregion
+        #endregion
 
-#region Sound Play
+        #region Sound Play
 
         private void Command_btn_Click_Sound(object sender, RoutedEventArgs e)
         {
@@ -396,6 +420,16 @@ namespace SciChartExamlpeOne
                 data[i] = (byte)(Math.Cos(2.0 * Math.PI * (double)i / (double)nLen * 5.0) * 255.0);
             //SoundPlayer.WriteSamples(data, nLen);
             //mainInit();
+        }
+        private void cbxSound_Change(object sender, RoutedEventArgs e)
+        {
+            if (!cbxSound.IsLoaded)
+                return;
+
+            if ((bool)cbxSound.IsChecked)
+                StartSoundServices();
+            else
+                StopSoundServices();
         }
 
         private void InitSoundPlayer(int _SmplRate, int nNoChannels, int nBytePerSample)
@@ -409,16 +443,22 @@ namespace SciChartExamlpeOne
             // set up our signal chain
             _snd_bufferedWaveProvider = new BufferedWaveProvider(_format);
 
-            // set up playback
+            //// set up playback
             _snd_player = new WaveOut();
             _snd_player.Init(_snd_bufferedWaveProvider);
+            _snd_player.DesiredLatency = 10 ;
 
-            StartSoundServices();
+            //_snd_AsioPlayer = new AsioOut();
+            //_snd_AsioPlayer.Init(_snd_bufferedWaveProvider);
+
+            StartSoundServices(); //--> Will Start when we grant it using _snd_isPlaying
         }
 
         private void StartSoundServices()
         {
+            _snd_bufferedWaveProvider.ClearBuffer();
             _snd_player.Play();
+            //_snd_AsioPlayer.Play();
             _snd_isPlaying = true;
         }
 
@@ -426,7 +466,30 @@ namespace SciChartExamlpeOne
         {
             _snd_isPlaying = false;
             _snd_player.Stop();
+            //_snd_AsioPlayer.Stop();
         }
+
+        private void SoundPlayTimer(object sender, EventArgs e)
+        {
+            _snd_playtimer.Stop();
+            int nLen = nSoundPure.Count;
+            if (nLen > 0) {
+                int idx = 0;
+                byte[] data = new byte[nLen];
+                while (nSoundPure.Count > 0)
+                {
+                    Int32 localvalue;
+                    if (nSoundPure.TryDequeue(out localvalue))
+                    {
+                        data[idx] = (byte)localvalue;
+                        idx++;
+                    }
+                }
+                _snd_bufferedWaveProvider.AddSamples(data, 0, nLen);
+            }
+            _snd_playtimer.Start();
+        }
+
 
         //For use when 24bit data sampling is achieved
         private void ConvertToWave(Int32[] samples, int nBitsPerData, int nBitsPerSample, out byte[] byteBuffer)
@@ -463,14 +526,17 @@ namespace SciChartExamlpeOne
 #region COM CONNECTION
         private void Connect_Comm(object sender, RoutedEventArgs e)
         {
-            if (Comm_Port_Names.Text.IsEmpty() )
-                return;
+            //if (_save_ComportName == "" )
+            //    return;
 
             if (_com_bConnectionStatus == false)
             {
+                if (!setPage.ConfigComport(ref _save_ComportName, ref _save_ComportBaud))
+                    return;
+
                 //Sets up serial port
-                _com_serial.PortName = Comm_Port_Names.Text;
-                _com_serial.BaudRate = Convert.ToInt32(Baud_Rates.Text);
+                _com_serial.PortName = _save_ComportName;
+                _com_serial.BaudRate = _save_ComportBaud;
                 _com_serial.Handshake = System.IO.Ports.Handshake.None;
                 _com_serial.Parity = Parity.None;
                 _com_serial.DataBits = 8;
@@ -480,11 +546,14 @@ namespace SciChartExamlpeOne
                 _com_serial.Open();
                 SendCommand(Constants.CMD_LIVE);
 
-                //Sets button State and Creates function call on data recieved
-                Connect_btn.Content = "Disconnect";
-                _com_bConnectionStatus = true;
-                lblComState.Text = "COM Port Connected on Port " + Comm_Port_Names.Text;
-                _com_serial.DataReceived += new System.IO.Ports.SerialDataReceivedEventHandler(Recieve);
+                if (_com_serial.IsOpen)
+                {
+                    //Sets button State and Creates function call on data recieved
+                    setPage.btnConnect.Content = "Disconnect";
+                    _com_bConnectionStatus = true;
+                    lblComState.Text = "COM Port Connected on Port " + _save_ComportName;
+                    _com_serial.DataReceived += new System.IO.Ports.SerialDataReceivedEventHandler(Recieve);
+                }
 
             }
             else
@@ -493,7 +562,7 @@ namespace SciChartExamlpeOne
                 {
                     SendCommand(Constants.CMD_STOP);
                     ComPortClose();
-                    Connect_btn.Content = "Connect";
+                    setPage.btnConnect.Content = "Connect";
                     lblComState.Text = "Disconnected";
                     _com_bConnectionStatus = false;
                 }
@@ -562,6 +631,13 @@ namespace SciChartExamlpeOne
                         int idx = i + index + Constants.HDRLEN ;
                         int value = Convert.ToInt32(bufferString[idx]);
                         nDataPure.Enqueue(value);
+                        if (_snd_isPlaying) 
+                            nSoundPure.Enqueue(value);
+                        //if (_snd_Playing)
+                        //{
+                        //    byte[] data = { (byte)value };
+                        //    _snd_bufferedWaveProvider.AddSamples(data, 0, 1);
+                        //}
                     }
                     bufferString = bufferString.Remove(0, index + Constants.PACKETLEN);
                 }
@@ -621,6 +697,7 @@ namespace SciChartExamlpeOne
                 lblComState.Text = "Device offline";
                 lblComState.Foreground = Brushes.Red;
                 //refresh connection
+                Connect_Comm(null, null);
             }
             else
             {
@@ -651,12 +728,28 @@ namespace SciChartExamlpeOne
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            //Save Settings
-            Properties.Settings.Default.LOWCUTINDEX = (int)cmbLowPassFilter.SelectedIndex;
-            Properties.Settings.Default.HIGHCUTINDEX = (int)cmbHighPassFilter.SelectedIndex;
-            Properties.Settings.Default.VOLTDIV = (decimal)numVoltDiv.Value;
-            Properties.Settings.Default.TIMEDIV = (decimal)numTimeDiv.Value;
-            Properties.Settings.Default.Save(); // Saves settings in application configuration file
+
+            MessageBoxResult result = MessageBox.Show(
+                    "Would you like to save Settings?",
+                    "Confirmation",
+                    MessageBoxButton.YesNoCancel,
+                    MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Cancel)
+            {
+                e.Cancel = true;
+                return;
+            }
+            else if (result == MessageBoxResult.Yes)
+            {
+                //Save Settings
+                Properties.Settings.Default.LOWCUTINDEX = (int)cmbLowPassFilter.SelectedIndex;
+                Properties.Settings.Default.HIGHCUTINDEX = (int)cmbHighPassFilter.SelectedIndex;
+                Properties.Settings.Default.VOLTDIV = (decimal)numVoltDiv.Value;
+                Properties.Settings.Default.TIMEDIV = (decimal)numTimeDiv.Value;
+                SaveSettings();
+                Properties.Settings.Default.Save(); // Saves settings in application configuration file    
+            }
 
             _sci_timer.Stop();
             //Escape Handles
@@ -665,13 +758,72 @@ namespace SciChartExamlpeOne
                 ComPortClose();
             }
             StopSoundServices();
+            _snd_player.Dispose();
+            //_snd_AsioPlayer.Dispose();
         }
 
         #endregion
 
-        #region Button Routins
+#region Save and Load Routines
+        private void LoadSettings()
+        {
+            _save_RefreshValue = (int)Properties.Settings.Default.RREFRESHFPS;
+            _save_SweepGraph = Properties.Settings.Default.SWEEPGRAPH;
+            _save_ComportName = Properties.Settings.Default.COMPORTNAME;
+            _save_ComportBaud = Properties.Settings.Default.COMPORTBAUD;
+        }
+
+        private void LoadSettingContent()
+        {
+            //Load to Setting Control
+            setPage.sldRefreshFPS.Value = _save_RefreshValue;
+            setPage.cbxSweepGraph.IsChecked = _save_SweepGraph;
+            setPage.ConfigComport(ref _save_ComportName, ref _save_ComportBaud);
+        }
+
+        private void SetSettings()
+        {
+            _save_RefreshValue = (int) setPage.sldRefreshFPS.Value;
+            _save_SweepGraph = (bool) setPage.cbxSweepGraph.IsChecked ;
+            _save_ComportName = setPage.cmbComportName.Text;
+            _save_ComportBaud = Convert.ToInt32(setPage.cmbBaudRate.Text);
+        }
+
+        private void SaveSettings()
+        {
+            Properties.Settings.Default.RREFRESHFPS = _save_RefreshValue;
+            Properties.Settings.Default.SWEEPGRAPH = _save_SweepGraph;
+            Properties.Settings.Default.COMPORTNAME = _save_ComportName;
+            Properties.Settings.Default.COMPORTBAUD = _save_ComportBaud;
+        }
+
+        private void ApplySettings()
+        {
+            if (_save_RefreshValue != (int)setPage.sldRefreshFPS.Value) {
+
+                _sci_timer.Stop();
+                _sci_timer.Interval = TimeSpan.FromMilliseconds((1000.0M / (decimal)setPage.sldRefreshFPS.Value).ToDouble());
+                _sci_timer.Start();
+            }
+            bool bRefreshConnection = false;
+            if ((_save_ComportBaud != Convert.ToInt32(setPage.cmbBaudRate.Text)) | !_save_ComportName.Equals(setPage.cmbComportName.Text))
+                bRefreshConnection = true;
+            SetSettings();
+            if (bRefreshConnection)
+            {
+                if(_com_bConnectionStatus)
+                    Connect_Comm(null, null);
+                while (_com_serial.IsOpen) ;
+                Connect_Comm(null,null);
+            }
+        }
+        #endregion
+
+#region Button Routins
         private void SettingVisibilityChange(object sender, RoutedEventArgs e)
         {
+            if ((DataContext as BorderViewModel).SettingVisible == Visibility.Visible)
+                ApplySettings();
             (DataContext as BorderViewModel).SettingVisible = (DataContext as BorderViewModel).SettingVisible == Visibility.Visible ? Visibility.Hidden : Visibility.Visible;
         }
         #endregion
