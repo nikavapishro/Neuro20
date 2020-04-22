@@ -18,6 +18,7 @@ using System.Windows.Media;
 using System.Windows.Interop;
 using NAudio.Wave;
 using System.Windows.Input;
+using FontAwesome.WPF;
 
 namespace SciChartExamlpeOne
 {
@@ -130,6 +131,7 @@ namespace SciChartExamlpeOne
         int nIdxLowPassCombo = (int)Properties.Settings.Default.LOWCUTINDEX;
         int nIdxHighPassCombo = (int)Properties.Settings.Default.HIGHCUTINDEX;
 
+        private bool isDrawingSignal;
         private DispatcherTimer _sci_timer;
         private XyDataSeries<double, double> _originalData;
         //private XyDataSeries<double, double> _filteredData;
@@ -164,6 +166,7 @@ namespace SciChartExamlpeOne
             InitSoundPlayer(Properties.Settings.Default.SAMPLERATE, 1, 1);
             cbxSound_Change(null, null);
             _adc_ConvertNum2Value = GetAdcCoef();
+            this.KeyDown += new KeyEventHandler(MainWindow_KeyDown);
         }
 
         #region Windows Chrome
@@ -221,6 +224,7 @@ namespace SciChartExamlpeOne
             this.Title = "Neuro 2014 EMG Test Suit";
             strTitle.Text = "Neuro 2014 EMG Test Suit";
             lblComState.Text = "Disconnected";
+            isDrawingSignal = false;
             cbxSound.IsChecked = true;
             cbxNotch.IsChecked = false;
             _snd_isPlaying = false;
@@ -630,8 +634,9 @@ namespace SciChartExamlpeOne
                     {
                         int idx = i + index + Constants.HDRLEN ;
                         int value = Convert.ToInt32(bufferString[idx]);
-                        nDataPure.Enqueue(value);
-                        if (_snd_isPlaying) 
+                        if(isDrawingSignal)
+                            nDataPure.Enqueue(value);
+                        if (_snd_isPlaying & isDrawingSignal) 
                             nSoundPure.Enqueue(value);
                         //if (_snd_Playing)
                         //{
@@ -826,6 +831,22 @@ namespace SciChartExamlpeOne
                 ApplySettings();
             (DataContext as BorderViewModel).SettingVisible = (DataContext as BorderViewModel).SettingVisible == Visibility.Visible ? Visibility.Hidden : Visibility.Visible;
         }
+
+        private void btnPlayPause_Click(object sender, RoutedEventArgs e)
+        {
+            icoPlayPause.Icon = isDrawingSignal ? FontAwesomeIcon.PlayCircleOutline : FontAwesomeIcon.PauseCircleOutline ;
+            isDrawingSignal = !isDrawingSignal;
+        }
+
+        void MainWindow_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Space)
+            {
+                btnPlayPause_Click(null, null);
+            }
+            e = null;
+        }
+
         #endregion
     }
 }
