@@ -122,6 +122,7 @@ namespace SciChartExamlpeOne
         public bool _com_isBusy = false;
         string _com_recieved_data;
         bool _com_online = false;
+        bool _com_FreezeChange = false;
         static StringBuilder _com_bufReceiedData = new StringBuilder() ;
         public ConcurrentQueue<Int32> nDataPure = new ConcurrentQueue<Int32>() ;
         #endregion
@@ -578,6 +579,8 @@ namespace SciChartExamlpeOne
         {
             //if (_save_ComportName == "" )
             //    return;
+            if (_com_FreezeChange)
+                return;
 
             if (_com_bConnectionStatus == false)
             {
@@ -625,12 +628,6 @@ namespace SciChartExamlpeOne
         
         private Int32 GetMaxBaud(string comName, Int32 comBaud)
         {
-            //SerialPort _port = new SerialPort(comName);
-            //_port.Open();
-            //object p = _port.BaseStream.GetType().GetField("commProp", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(_port.BaseStream);
-            //Int32 bv = (Int32)p.GetType().GetField("dwSettableBaud", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public).GetValue(p);
-            //_port.Close();
-            //return (Int32) Math.Min(bv, comBaud);
             List<Int32> SupportedBaudRates = new List<Int32>{300,600,1200,2400,4800,9600,19200,38400,
                 57600,115200,230400,460800,921600,1000000,2000000,4000000,10000000};
             Int32 maxBaudRate = 0;
@@ -931,7 +928,13 @@ namespace SciChartExamlpeOne
         private void SettingVisibilityChange(object sender, RoutedEventArgs e)
         {
             if ((DataContext as BorderViewModel).SettingVisible == Visibility.Visible)
+            {
+                _com_FreezeChange = false;
                 ApplySettings();
+            }
+            else
+                _com_FreezeChange = true;
+                
             (DataContext as BorderViewModel).SettingVisible = (DataContext as BorderViewModel).SettingVisible == Visibility.Visible ? Visibility.Hidden : Visibility.Visible;
         }
 
