@@ -8,13 +8,15 @@ namespace SciChartExamlpeOne
 {
     static class Constants
     {
+        //Connections
         public const byte HDRLEN = 5;
         public const byte FRMLEN = 80;
         public const byte PACKETLEN = FRMLEN + HDRLEN;
         public const int BUFLENCHECK = (HDRLEN + FRMLEN) * 2;
         public const string HDRSTR = "\xFF\x00\xFE\x01\xFD";
-
         public const int DEFAULTBAUD = (460800);
+        public const int DEFAULTADCBIT = (8);
+        public const int DEFAULTHWVERSION = (1);
 
         //COMMAND
         public const byte CMD_LIVE = 0x11;

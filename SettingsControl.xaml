@@ -8,6 +8,8 @@
              mc:Ignorable="d" >
     <UserControl.Resources>
         <XmlDataProvider x:Key="ComSpeed" Source="DataConfig.xml" XPath="/Data/Comms/Baud" />
+        <XmlDataProvider x:Key="AdcRes" Source="DataConfig.xml" XPath="/Data/ADC/Resolution" />
+        <XmlDataProvider x:Key="HWVer" Source="DataConfig.xml" XPath="/Data/HWVersion/Version" />
         <Style  x:Key="Margin">
             <Setter Property="Control.Margin" Value="10"></Setter>
         </Style>
@@ -80,8 +82,13 @@
                         </StackPanel>
                         <StackPanel Margin="10" Orientation="Horizontal">
                             <CheckBox x:Name="cbxSweepGraph" HorizontalAlignment="Center" Style="{StaticResource ToggleSwitchStyle}" VerticalAlignment="Center">
-                                <TextBlock Margin="0 0 10 0">Sweep Graph</TextBlock>
+                                <TextBlock Margin="5 0 10 0">Sweep Graph</TextBlock>
                             </CheckBox>
+                        </StackPanel>
+                        <StackPanel Margin="10" Orientation="Horizontal">
+                            <Label Foreground="Black" Content="Sound Latency" />
+                            <TextBox x:Name="edxSoundLatencyMargin" MinWidth="50" TextAlignment="Center" Text="20" VerticalAlignment="Center"/>
+                            <Label Foreground="Black" Content="ms" />
                         </StackPanel>
                     </StackPanel>
                 </local:STabItem>
@@ -97,7 +104,14 @@
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="CONNECTION SPEED" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,0,20,0" />
                             <ComboBox SelectedIndex="8" x:Name="cmbBaudRate" HorizontalAlignment="Stretch" MinWidth="100" ItemsSource="{Binding Source={StaticResource ComSpeed}}" SelectedValue="{Binding ComSpeed}" />
-                            
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="ADC Resolution" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,0,20,0" />
+                            <ComboBox SelectedIndex="0" x:Name="cmbADCRes" HorizontalAlignment="Stretch" MinWidth="100" ItemsSource="{Binding Source={StaticResource AdcRes}}" SelectedValue="{Binding AdcRes}" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="ADC Resolution" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,0,20,0" />
+                            <ComboBox SelectedIndex="0" x:Name="cmbHWVersion" HorizontalAlignment="Stretch" MinWidth="100" ItemsSource="{Binding Source={StaticResource HWVer}}" SelectedValue="{Binding HWVer}" />
                         </StackPanel>
                         <Button HorizontalAlignment="Center" Content="Connect" x:Name="btnConnect"  Width="70"/>
                         <Button HorizontalAlignment="Center" Content="Command" x:Name="btnCommand"  Width="70"/>

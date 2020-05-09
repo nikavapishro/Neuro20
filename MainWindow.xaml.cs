@@ -1,24 +1,22 @@
 ﻿#define SOUNDPLAYENABLE
+#define ISUPGRADING
 
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.IO.Ports;
 using System.Text;
 using System.Threading;
 using System.Windows;
-using System.Windows.Documents;
 using System.Windows.Threading;
 using SciChart.Charting.Model.DataSeries;
-using SciChart.Charting.Model.Filters;
 using SciChart.Core.Extensions;
 using SciChart.Data.Model;
-using System.Linq;
 using System.Windows.Media;
-using System.Windows.Interop;
 using NAudio.Wave;
 using System.Windows.Input;
 using FontAwesome.WPF;
+using System.Reflection;
+using System.Collections.Generic;
 
 namespace SciChartExamlpeOne
 {
@@ -60,6 +58,18 @@ namespace SciChartExamlpeOne
             _periode = 1.0M / (decimal)_smplerate;
             _timediv = 1.0M;
         }
+
+        public void Clear()
+        {
+            _dataindex = 0;
+            _timeindex = 0;
+        }
+
+        public decimal ConvertToTime(int index)
+        {
+            return (decimal)index * _periode * _scale;
+        }
+        
         public void Increment() {
             _dataindex += 1;
             _timeindex += _periode * _scale;
@@ -100,6 +110,9 @@ namespace SciChartExamlpeOne
         private bool _save_SweepGraph;
         private string _save_ComportName;
         private int _save_ComportBaud;
+        private int _save_SoundLatencyMargin;
+        private int _save_AdcBitNum;
+        private int _save_HardWaveVersion;
         #endregion
 
         #region Com port
@@ -134,9 +147,9 @@ namespace SciChartExamlpeOne
         private bool isDrawingSignal;
         private DispatcherTimer _sci_timer;
         private XyDataSeries<double, double> _originalData;
-        //private XyDataSeries<double, double> _filteredData;
         private FilterData _filterData;
         private TimeIndex _sci_timeIndex;
+        private bool bResetGraph = false;
 
         #endregion
 
@@ -245,7 +258,6 @@ namespace SciChartExamlpeOne
             setPage.btnShowHide.Click += SettingVisibilityChange;
             setPage.btnConnect.Click += Connect_Comm;
             setPage.btnCommand.Click += Command_btn_Click_Sound;
-
         }
 
         #endregion
@@ -259,7 +271,7 @@ namespace SciChartExamlpeOne
             // Create XyDataSeries to host data for our charts
             _originalData = new XyDataSeries<double, double>();
             //_originalData.FifoCapacity = _sci_timeIndex.getVisibleRange_int() ;
-            
+
             //var _filteredData = new CustomFilter(_originalData);
             //_filterData = new FilterData(FilterTypes.LowPass);
             _filterData = new FilterData(FilterTypes.FIRBP_MA, Properties.Settings.Default.SAMPLERATE,
@@ -298,22 +310,54 @@ namespace SciChartExamlpeOne
             byte[] data = new byte[nLen];
             using (_originalData.SuspendUpdates())
             {
+                if (bResetGraph)
+                {
+                    _sci_timeIndex.Clear();
+                    _originalData.Clear();
+                    _filterData.Clear();
+                    bResetGraph = false;
+                }
                 while (nDataPure.Count > Constants.BUFLENCHECK)
                 {
-                    // Append a new data point;
                     Int32 localvalue;
                     if (nDataPure.TryDequeue(out localvalue))
                     {
                         data[idx] = (byte) localvalue;
                         idx++;
-                        _originalData.Append(_sci_timeIndex.getIndex_double(), (double)localvalue / (double) _adc_ConvertNum2Value.ToDouble());
-                        _filterData.Append(_sci_timeIndex.getIndex_double(), (double)localvalue / _adc_ConvertNum2Value.ToDouble());
+
+                        #region Sweeping Graph
+                        if (_save_SweepGraph) 
+                        {
+                            //double _index = (double)_sci_timeIndex.ConvertToTime(_sci_timeIndex.getIndex_int() % _sci_timeIndex.getVisibleRange_int());
+                            double _index = (int)(_sci_timeIndex.getIndex_int() % _sci_timeIndex.getVisibleRange_int());
+                            if ((_originalData.Count < _sci_timeIndex.getVisibleRange_int()) && (_index >= _originalData.Count))
+                            {
+                                _originalData.Append(_index, (double)localvalue / (double)_adc_ConvertNum2Value.ToDouble());
+                                _filterData.Append(_index, (double)localvalue / _adc_ConvertNum2Value.ToDouble());
+                            }
+                            else
+                            {
+                                _originalData.Update(_index, (double)localvalue / (double)_adc_ConvertNum2Value.ToDouble());
+                                _filterData.Update(_index, (double)localvalue / _adc_ConvertNum2Value.ToDouble());
+                            }
+                        }
+                        #endregion
+
+                        #region Normal Graph
+                        if (!_save_SweepGraph)
+                        {
+                            _originalData.Append(_sci_timeIndex.getIndex_double(), (double)localvalue / (double)_adc_ConvertNum2Value.ToDouble());
+                            _filterData.Append(_sci_timeIndex.getIndex_double(), (double)localvalue / _adc_ConvertNum2Value.ToDouble());
+                        }
+                        #endregion
+
                         _sci_timeIndex.Increment();
                     }
-                    //scatterData.Append(i, Math.Cos(i * 0.1));
                 }
-                // Set VisibleRange to last 1,000 points
-                sciChartSurface.XAxis.VisibleRange = new DoubleRange(_sci_timeIndex.getIndex_double() - _sci_timeIndex.getVisibleRange_double(), _sci_timeIndex.getIndex_double());
+                if (_save_SweepGraph) 
+                    sciChartSurface.XAxis.VisibleRange = new DoubleRange(0, _sci_timeIndex.getVisibleRange_int());
+                else 
+                    sciChartSurface.XAxis.VisibleRange = new DoubleRange(_sci_timeIndex.getIndex_double() - _sci_timeIndex.getVisibleRange_double(), _sci_timeIndex.getIndex_double());
             }
 
 #if SOUNDPLAYENABLE
@@ -489,6 +533,8 @@ namespace SciChartExamlpeOne
                         idx++;
                     }
                 }
+                if (_snd_bufferedWaveProvider.BufferedDuration > TimeSpan.FromMilliseconds(_save_SoundLatencyMargin))
+                    _snd_bufferedWaveProvider.ClearBuffer();
                 _snd_bufferedWaveProvider.AddSamples(data, 0, nLen);
             }
             _snd_playtimer.Start();
@@ -540,7 +586,7 @@ namespace SciChartExamlpeOne
 
                 //Sets up serial port
                 _com_serial.PortName = _save_ComportName;
-                _com_serial.BaudRate = _save_ComportBaud;
+                _com_serial.BaudRate = GetMaxBaud(_save_ComportName, _save_ComportBaud);
                 _com_serial.Handshake = System.IO.Ports.Handshake.None;
                 _com_serial.Parity = Parity.None;
                 _com_serial.DataBits = 8;
@@ -548,10 +594,11 @@ namespace SciChartExamlpeOne
                 _com_serial.ReadTimeout = 200;
                 _com_serial.WriteTimeout = 50;
                 _com_serial.Open();
-                SendCommand(Constants.CMD_LIVE);
 
                 if (_com_serial.IsOpen)
                 {
+                    SendCommand(Constants.CMD_LIVE);
+                    numVoltDiv_ValueChanged(null, null);
                     //Sets button State and Creates function call on data recieved
                     setPage.btnConnect.Content = "Disconnect";
                     _com_bConnectionStatus = true;
@@ -575,6 +622,41 @@ namespace SciChartExamlpeOne
                 }
             }
         }
+        
+        private Int32 GetMaxBaud(string comName, Int32 comBaud)
+        {
+            //SerialPort _port = new SerialPort(comName);
+            //_port.Open();
+            //object p = _port.BaseStream.GetType().GetField("commProp", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(_port.BaseStream);
+            //Int32 bv = (Int32)p.GetType().GetField("dwSettableBaud", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public).GetValue(p);
+            //_port.Close();
+            //return (Int32) Math.Min(bv, comBaud);
+            List<Int32> SupportedBaudRates = new List<Int32>{300,600,1200,2400,4800,9600,19200,38400,
+                57600,115200,230400,460800,921600,1000000,2000000,4000000,10000000};
+            Int32 maxBaudRate = 0;
+            try
+            {
+                //SupportedBaudRates has the commonly used baudRate rates in it
+                //flavor to taste
+                foreach (Int32 baudRate in SupportedBaudRates)
+                {
+                    using (SerialPort port = new SerialPort(comName))
+                    {
+                        port.BaudRate = baudRate;
+                        port.Open();
+                        port.Close();
+                    }
+                    maxBaudRate = baudRate;
+                }
+            }
+            catch
+            {
+                //ignored - traps exception generated by
+                //baudRate rate not supported
+            }
+            return Math.Min(maxBaudRate, comBaud);
+        }
+
         public bool ComPortClose() {
             if (_com_serial.IsOpen) {
                 Thread CloseDown = new Thread(new ThreadStart(CloseSerialThread));
@@ -623,7 +705,9 @@ namespace SciChartExamlpeOne
 
             string bufferString = _com_bufReceiedData.ToString();
             int index = 0;
-            while ((index != -1) & (bufferString.Length > Constants.BUFLENCHECK))
+            int nNOByte = _save_AdcBitNum >> 3;
+            int nBufLimit = (Constants.HDRLEN + Constants.FRMLEN * nNOByte) * 2 ;
+            while ((index != -1) & (bufferString.Length > nBufLimit))
             {
                 index = bufferString.IndexOf(Constants.HDRSTR);
                 if (index > -1)
@@ -632,17 +716,19 @@ namespace SciChartExamlpeOne
                     nTotPureDataReceied += Constants.FRMLEN;
                     for (int i=0; i<Constants.FRMLEN; i++)
                     {
-                        int idx = i + index + Constants.HDRLEN ;
-                        int value = Convert.ToInt32(bufferString[idx]);
-                        if(isDrawingSignal)
+                        
+                        int idx = i * nNOByte + index + Constants.HDRLEN ;
+                        int[] nValByte = new int[nNOByte];
+                        for (int j = 0; j < nNOByte; j++)
+                            nValByte[j] = Convert.ToInt32(bufferString[idx + j]);
+                        //int value = Convert.ToInt32(bufferString[idx]);
+                        int value = 0 ;
+                        for (int j = 0; j < nNOByte; j++)
+                            value = nValByte[j] + (value << 8) ;
+                        if (isDrawingSignal)
                             nDataPure.Enqueue(value);
                         if (_snd_isPlaying & isDrawingSignal) 
                             nSoundPure.Enqueue(value);
-                        //if (_snd_Playing)
-                        //{
-                        //    byte[] data = { (byte)value };
-                        //    _snd_bufferedWaveProvider.AddSamples(data, 0, 1);
-                        //}
                     }
                     bufferString = bufferString.Remove(0, index + Constants.PACKETLEN);
                 }
@@ -767,7 +853,7 @@ namespace SciChartExamlpeOne
             //_snd_AsioPlayer.Dispose();
         }
 
-        #endregion
+#endregion
 
 #region Save and Load Routines
         private void LoadSettings()
@@ -776,6 +862,9 @@ namespace SciChartExamlpeOne
             _save_SweepGraph = Properties.Settings.Default.SWEEPGRAPH;
             _save_ComportName = Properties.Settings.Default.COMPORTNAME;
             _save_ComportBaud = Properties.Settings.Default.COMPORTBAUD;
+            _save_SoundLatencyMargin = Properties.Settings.Default.SOUNDLATENCY;
+            _save_AdcBitNum = Properties.Settings.Default.ADCBITNUM;
+            _save_HardWaveVersion = Properties.Settings.Default.HWVERSION;
         }
 
         private void LoadSettingContent()
@@ -784,6 +873,10 @@ namespace SciChartExamlpeOne
             setPage.sldRefreshFPS.Value = _save_RefreshValue;
             setPage.cbxSweepGraph.IsChecked = _save_SweepGraph;
             setPage.ConfigComport(ref _save_ComportName, ref _save_ComportBaud);
+            setPage.edxSoundLatencyMargin.Text = _save_SoundLatencyMargin.ToString();
+            setPage.ConfigCombo(_save_AdcBitNum, ref setPage.cmbADCRes, Constants.DEFAULTADCBIT);
+            setPage.ConfigCombo(_save_HardWaveVersion, ref setPage.cmbHWVersion, Constants.DEFAULTHWVERSION);
+
         }
 
         private void SetSettings()
@@ -792,6 +885,9 @@ namespace SciChartExamlpeOne
             _save_SweepGraph = (bool) setPage.cbxSweepGraph.IsChecked ;
             _save_ComportName = setPage.cmbComportName.Text;
             _save_ComportBaud = Convert.ToInt32(setPage.cmbBaudRate.Text);
+            _save_SoundLatencyMargin = Convert.ToInt32(setPage.edxSoundLatencyMargin.Text);
+            _save_AdcBitNum = Convert.ToInt32(setPage.cmbADCRes.Text);
+            _save_HardWaveVersion = Convert.ToInt32(setPage.cmbHWVersion.Text);
         }
 
         private void SaveSettings()
@@ -800,6 +896,9 @@ namespace SciChartExamlpeOne
             Properties.Settings.Default.SWEEPGRAPH = _save_SweepGraph;
             Properties.Settings.Default.COMPORTNAME = _save_ComportName;
             Properties.Settings.Default.COMPORTBAUD = _save_ComportBaud;
+            Properties.Settings.Default.SOUNDLATENCY = _save_SoundLatencyMargin;
+            Properties.Settings.Default.ADCBITNUM = _save_AdcBitNum;
+            Properties.Settings.Default.HWVERSION = _save_HardWaveVersion;
         }
 
         private void ApplySettings()
@@ -809,6 +908,10 @@ namespace SciChartExamlpeOne
                 _sci_timer.Stop();
                 _sci_timer.Interval = TimeSpan.FromMilliseconds((1000.0M / (decimal)setPage.sldRefreshFPS.Value).ToDouble());
                 _sci_timer.Start();
+            }
+            if (_save_SweepGraph != (bool)setPage.cbxSweepGraph.IsChecked)
+            {
+                bResetGraph = true;
             }
             bool bRefreshConnection = false;
             if ((_save_ComportBaud != Convert.ToInt32(setPage.cmbBaudRate.Text)) | !_save_ComportName.Equals(setPage.cmbComportName.Text))
@@ -822,7 +925,7 @@ namespace SciChartExamlpeOne
                 Connect_Comm(null,null);
             }
         }
-        #endregion
+#endregion
 
 #region Button Routins
         private void SettingVisibilityChange(object sender, RoutedEventArgs e)
@@ -847,6 +950,6 @@ namespace SciChartExamlpeOne
             e = null;
         }
 
-        #endregion
+#endregion
     }
 }

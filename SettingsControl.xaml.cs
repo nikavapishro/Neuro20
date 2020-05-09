@@ -17,6 +17,24 @@ namespace SciChartExamlpeOne
             InitializeComponent();
         }
 
+        public void ConfigCombo(int nIndex ,ref ComboBox cmb , int default_value)
+        {
+            List<string> strElm = new List<string>();
+            foreach (XmlElement elm in cmb.Items)
+                strElm.Add((string)elm.InnerText);
+
+            int defIndex = strElm.IndexOf(default_value.ToString());
+            int selIndex = strElm.IndexOf(nIndex.ToString());
+
+            if (nIndex == 0)
+                cmb.SelectedIndex = defIndex;
+            else
+                cmb.SelectedIndex = selIndex;
+
+            if (cmb.SelectedIndex == -1)
+                cmb.SelectedIndex = defIndex;
+        }
+            
         public bool ConfigComport(ref string _ComportName, ref int _ComportBaud)
         {
             bool bIsPortValid = true;

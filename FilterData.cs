@@ -64,6 +64,13 @@ namespace SciChartExamlpeOne
                 
         }
 
+        public void Clear()
+        {
+            _DataSeries.Clear();
+            _OriginalValues.Clear();
+            nLastIndex = 0;
+        }
+
         public void ResetFilter(FilterTypes _ftype, double Fsample, int order1, double F3db1, int order2 = 0, double F3db2 = 0)
         {
             if (_ftype == FilterTypes.FIRLowPass || _ftype == FilterTypes.FIRLP_MA)
@@ -131,6 +138,55 @@ namespace SciChartExamlpeOne
 
             nLastIndex++;
         }
+
+        public void Update(double xValue, double yValue)
+        {
+            double result = 0.0;
+            if (_filtertype == FilterTypes.MovingAverage)
+            {
+                result = MovingAverage(yValue);
+            }
+            else if (_filtertype == FilterTypes.LowPass)
+            {
+                result = LowPass(yValue);
+            }
+            else if (_filtertype == FilterTypes.FIRLowPass)
+            {
+                result = _firLowPass.compute(yValue);
+            }
+            else if (_filtertype == FilterTypes.FIRHighPass)
+            {
+                result = _firHighPass.compute(yValue);
+            }
+            else if (_filtertype == FilterTypes.FIRBandPass)
+            {
+                result = _firBandPass.compute(yValue);
+            }
+            else if (_filtertype == FilterTypes.FIRLP_MA)
+            {
+                double val = _firLowPass.compute(yValue);
+                result = MovingAverage(val);
+            }
+            else if (_filtertype == FilterTypes.FIRBP_MA)
+            {
+                double val = _firBandPass.compute(yValue);
+                result = MovingAverage(val);
+            }
+            else
+                result = yValue;
+
+            if (isNotchEnable)
+            {
+                _DataSeries.Update(xValue, _firNotch.compute(result));
+            }
+            else
+            {
+                _DataSeries.Update(xValue, result);
+            }
+
+            nLastIndex++;
+        }
+
         public int GetLastIndex()
         {
             return nLastIndex;

@@ -1,5 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Data>
+  <HWVersion>
+    <Version>1</Version>
+    <Version>2</Version>
+  </HWVersion>
+  <ADC>
+    <Resolution>8</Resolution>
+    <Resolution>10</Resolution>
+    <Resolution>16</Resolution>
+    <Resolution>24</Resolution>
+  </ADC>
   <Comms>
     <Baud>2400</Baud>
     <Baud>4800</Baud>

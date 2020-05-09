@@ -122,12 +122,15 @@ namespace SciChartExamlpeOne.Properties {
             }
         }
         
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("8")]
         public int ADCBITNUM {
             get {
                 return ((int)(this["ADCBITNUM"]));
+            }
+            set {
+                this["ADCBITNUM"] = value;
             }
         }
         
@@ -164,6 +167,30 @@ namespace SciChartExamlpeOne.Properties {
             }
             set {
                 this["COMPORTBAUD"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("200")]
+        public int SOUNDLATENCY {
+            get {
+                return ((int)(this["SOUNDLATENCY"]));
+            }
+            set {
+                this["SOUNDLATENCY"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
+        public int HWVERSION {
+            get {
+                return ((int)(this["HWVERSION"]));
+            }
+            set {
+                this["HWVERSION"] = value;
             }
         }
     }

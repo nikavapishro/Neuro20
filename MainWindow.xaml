@@ -16,6 +16,7 @@
     <Window.Resources>
         <XmlDataProvider x:Key="FilterLowPass" Source="DataConfig.xml" XPath="/Data/Filters/LowPass" />
         <XmlDataProvider x:Key="FilterHighPass" Source="DataConfig.xml" XPath="/Data/Filters/HighPass" />
+        <local:CustomNumericLabelProvider x:Key="LBProvider"/>
     </Window.Resources>
 
     <WindowChrome.WindowChrome>
@@ -142,11 +143,11 @@
                     <s:SciChartSurface.XAxis>
                         <s:NumericAxis AxisTitle="Time (ms)" DrawMajorTicks="False" DrawMinorTicks="False"
                                DrawMajorBands="False" DrawMajorGridLines="False" DrawMinorGridLines="False"
-                               DrawLabels="True" AutoRange="Never" TextFormatting="0.00"/>
+                               DrawLabels="False" AutoRange="Never" TextFormatting="0:e"/>
                     </s:SciChartSurface.XAxis>
                     <!--Create Y-Axis-->
                     <s:SciChartSurface.YAxis>
-                        <s:NumericAxis AxisTitle="Value" AutoRange="Never" VisibleRange="0,256" GrowBy="0.1,0.1"/>
+                        <s:NumericAxis AxisTitle="Value" LabelProvider="{StaticResource LBProvider}" AutoRange="Never" VisibleRange="0,256" GrowBy="0.1,0.1"/>
                     </s:SciChartSurface.YAxis>
                     <!--Define Modifiers-->
                     <s:SciChartSurface.ChartModifier>
@@ -166,12 +167,12 @@
                             <!-- Allow Mousewheel Zoom -->
                             <s:MouseWheelZoomModifier/>
 
-                            <s:LegendModifier ShowLegend="True" Orientation="Horizontal"
+                            <s:LegendModifier ShowLegend="True" Orientation="Vertical"
                                        VerticalAlignment="Bottom"                                     
-                                       HorizontalAlignment="Center"
+                                       HorizontalAlignment="Left"
                                        LegendPlacement="Inside" />
                             <!-- Add a RolloverModifier to the chart (shows vertical line tooltips -->
-                            <s:RolloverModifier ExecuteOn="MouseMove" ShowTooltipOn="MouseHover"/>
+                            <s:RolloverModifier x:Name="sRolOver" DrawVerticalLine="True"  ExecuteOn="MouseMove" ShowTooltipOn="MouseHover" />
 
                         </s:ModifierGroup>
                     </s:SciChartSurface.ChartModifier>

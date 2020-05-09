@@ -106,6 +106,7 @@
     <Compile Include="BorderViewModel.cs" />
     <Compile Include="Command.cs" />
     <Compile Include="ConstantVariables.cs" />
+    <Compile Include="CustomNumericLabelProvider.cs" />
     <Compile Include="FilterData.cs" />
     <Compile Include="FIRFilters.cs" />
     <Compile Include="NumericUpDown.xaml.cs">
