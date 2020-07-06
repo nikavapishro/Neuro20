@@ -31,6 +31,8 @@ namespace SciChartExamlpeOne
         public const byte CMD_SETCHANNEL = 0xF4;
         public const byte CMD_ENABLESTIM = 0x27;
         public const byte CMD_DISABLESTIM = 0x39;
+        public const byte CMD_SETCHANNEL1 = 0xE1;
+        public const byte CMD_SETCHANNEL2 = 0xE2;
 
         //Filters
         public const int FIR_LOWPASS_ORDER = 4;

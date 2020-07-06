@@ -84,6 +84,8 @@
                 <!-- Oscope Settings -->
                 <Grid Grid.Row="0" Margin="10,0,10,0">
                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="2*"/>
                         <ColumnDefinition Width="2*"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="2*"/>
@@ -98,22 +100,28 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
+                    <!--Channel Select-->
+                    <TextBlock Grid.Column="0" Text="Channel" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="20,0,20,0"/>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+                        <RadioButton x:Name="rbChannelOne" Margin="2 0" Background="LightPink" Foreground="DarkRed" GroupName="rbChannel" IsChecked="True"  Checked="rbChannel_Checked">CH1</RadioButton>
+                        <RadioButton x:Name="rbChannelTwo" Margin="2 0" Background="LightGreen" Foreground="DarkGreen" GroupName="rbChannel" Checked="rbChannel_Checked" >CH2</RadioButton>
+                    </StackPanel>
                     <!--Time Division-->
-                    <TextBlock Grid.Column="0" Text="Time Division (s)" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,0,20,0"/>
-                    <local:NumericUpDown x:Name="numTimeDiv" Grid.Column="1" ValueChanged="numTimeDiv_ValueChanged"/>
+                    <TextBlock Grid.Column="2" Text="Time Division (s)" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,0,20,0"/>
+                    <local:NumericUpDown x:Name="numTimeDiv" Grid.Column="3" ValueChanged="numTimeDiv_ValueChanged"/>
                     <!--Volt Division-->
-                    <TextBlock Grid.Column="2" Text="Volt Division (V)" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,0,20,0" />
-                    <local:NumericUpDown x:Name="numVoltDiv" Grid.Column="3" ValueChanged="numVoltDiv_ValueChanged"/>
+                    <TextBlock Grid.Column="4" Text="Volt Division (V)" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,0,20,0" />
+                    <local:NumericUpDown x:Name="numVoltDiv" Grid.Column="5" ValueChanged="numVoltDiv_ValueChanged"/>
                     <!--Low Cut Filter-->
-                    <TextBlock Grid.Column="4" Text="Low Pass Filter" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,0,20,0"/>
-                    <ComboBox Grid.Column="5" Width="70" x:Name="cmbLowPassFilter" HorizontalAlignment="Stretch" SelectionChanged="cmbFilter_SelectionChanged" ItemsSource="{Binding Source={StaticResource FilterLowPass}}" />
+                    <TextBlock Grid.Column="6" Text="Low Pass Filter" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,0,20,0"/>
+                    <ComboBox Grid.Column="7" Width="70" x:Name="cmbLowPassFilter" HorizontalAlignment="Stretch" SelectionChanged="cmbFilter_SelectionChanged" ItemsSource="{Binding Source={StaticResource FilterLowPass}}" />
                     <!--High Cut Filter-->
-                    <TextBlock Grid.Column="6" Text="High Pass Filter" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,0,20,0"/>
-                    <ComboBox Grid.Column="7" Width="70" x:Name="cmbHighPassFilter" HorizontalAlignment="Stretch" SelectionChanged="cmbFilter_SelectionChanged" ItemsSource="{Binding Source={StaticResource FilterHighPass}}" />
+                    <TextBlock Grid.Column="8" Text="High Pass Filter" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,0,20,0"/>
+                    <ComboBox Grid.Column="9" Width="70" x:Name="cmbHighPassFilter" HorizontalAlignment="Stretch" SelectionChanged="cmbFilter_SelectionChanged" ItemsSource="{Binding Source={StaticResource FilterHighPass}}" />
                     <!--Notch Filter-->
-                    <CheckBox Grid.Column="8" VerticalAlignment="Center" HorizontalAlignment="Center" IsChecked="False" x:Name="cbxNotch" Content="-(50Hz)" Unchecked="cbxNotch_Change" Checked="cbxNotch_Change" />
+                    <CheckBox Grid.Column="10" VerticalAlignment="Center" HorizontalAlignment="Center" IsChecked="False" x:Name="cbxNotch" Content="-(50Hz)" Unchecked="cbxNotch_Change" Checked="cbxNotch_Change" />
                     <!--Notch Filter-->
-                    <CheckBox Grid.Column="9" VerticalAlignment="Center" HorizontalAlignment="Center" IsChecked="True" x:Name="cbxSound" Content="Sound" Unchecked="cbxSound_Change" Checked="cbxSound_Change" />
+                    <CheckBox Grid.Column="11" VerticalAlignment="Center" HorizontalAlignment="Center" IsChecked="True" x:Name="cbxSound" Content="Sound" Unchecked="cbxSound_Change" Checked="cbxSound_Change" />
                 </Grid>
 
                 <!-- Create the chart surface -->
@@ -200,6 +208,9 @@
                     </StatusBar.ItemsPanel>
                     <StatusBarItem>
                         <TextBlock Name="lblComState" />
+                    </StatusBarItem>
+                    <StatusBarItem Grid.Column="1">
+                        <TextBlock Name="lblChannelName" />
                     </StatusBarItem>
                     <StatusBarItem Grid.Column="2" HorizontalAlignment="Right">
                         <TextBlock x:Name="lblStatus" >Connection Speed [KB]</TextBlock>

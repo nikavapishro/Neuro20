@@ -137,6 +137,33 @@
                     <local:STabItem.Header>
                         <TextBlock Text="Contact" />
                     </local:STabItem.Header>
+                    <StackPanel x:Name="stkAboutUs" Margin="10" Style="{StaticResource StackStyle}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock VerticalAlignment="Center" HorizontalAlignment="Left" Margin="20,0,20,0" LineHeight="25" TextAlignment="Center">
+                                This Software belongs to Neuro 14 and Neuro 20 EMG Test Suit. <LineBreak/>
+                                For Any information contact info@nikavapishro.ir . <LineBreak/>
+                                All Rights Reseved for SHAFA DANESH HOONAM CO. ©2020.<LineBreak/>
+                                ¤ Designed and Manufactered in I.R.IRAN. ¤ 
+                            </TextBlock>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock VerticalAlignment="Center" HorizontalAlignment="Left" Margin="20,20,20,0" LineHeight="25" Foreground="Black">
+                                Owner info:
+                            </TextBlock>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="20 0">
+                            <TextBlock>Name :</TextBlock>
+                            <TextBox Name="txtDrName"  MinWidth="200"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="20 0">
+                            <TextBlock>Address :</TextBlock>
+                            <TextBox Name="txtAddress"  MinWidth="400" MinLines="3"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="20 0">
+                            <TextBlock>Phone :</TextBlock>
+                            <TextBox Name="txtPhone"  MinWidth="100"/>
+                        </StackPanel>
+                    </StackPanel>
                 </local:STabItem>
             </local:STabControl>
 

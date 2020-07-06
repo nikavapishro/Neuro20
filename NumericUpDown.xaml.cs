@@ -9,7 +9,7 @@ namespace SciChartExamlpeOne
     /// </summary>
     public partial class NumericUpDown : UserControl
     {
-        private decimal[] BaseValue = { 10, 25, 50, 75 };
+        private decimal[] BaseValue = { 10, 12.5M, 15, 17.5M , 20, 25, 50, 75 };
         private decimal[] PowerValue = { 0.0000001M, 0.000001M, 0.00001M, 0.0001M, 0.001M, 0.01M, 0.1M };
         private int nIndex = 8;
         public static decimal MinValue = 0;

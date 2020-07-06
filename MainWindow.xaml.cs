@@ -151,6 +151,7 @@ namespace SciChartExamlpeOne
         private FilterData _filterData;
         private TimeIndex _sci_timeIndex;
         private bool bResetGraph = false;
+        private int nChannelNumber;
 
         #endregion
 
@@ -238,6 +239,7 @@ namespace SciChartExamlpeOne
             this.Title = "Neuro 2014 EMG Test Suit";
             strTitle.Text = "Neuro 2014 EMG Test Suit";
             lblComState.Text = "Disconnected";
+            nChannelNumber = 1;
             isDrawingSignal = false;
             cbxSound.IsChecked = true;
             cbxNotch.IsChecked = false;
@@ -463,12 +465,13 @@ namespace SciChartExamlpeOne
 
         private void Command_btn_Click_Sound(object sender, RoutedEventArgs e)
         {
-            int nLen = 4800;
-            byte[] data = new byte[nLen];
-            for (int i = 0; i < nLen; i++)
-                data[i] = (byte)(Math.Cos(2.0 * Math.PI * (double)i / (double)nLen * 5.0) * 255.0);
+            //int nLen = 4800;
+            //byte[] data = new byte[nLen];
+            //for (int i = 0; i < nLen; i++)
+            //    data[i] = (byte)(Math.Cos(2.0 * Math.PI * (double)i / (double)nLen * 5.0) * 255.0);
             //SoundPlayer.WriteSamples(data, nLen);
             //mainInit();
+            SetChannel(-1); //Reverse Channels
         }
         private void cbxSound_Change(object sender, RoutedEventArgs e)
         {
@@ -602,6 +605,7 @@ namespace SciChartExamlpeOne
                 {
                     SendCommand(Constants.CMD_LIVE);
                     numVoltDiv_ValueChanged(null, null);
+                    SetChannel(nChannelNumber);
                     //Sets button State and Creates function call on data recieved
                     setPage.btnConnect.Content = "Disconnect";
                     _com_bConnectionStatus = true;
@@ -761,6 +765,30 @@ namespace SciChartExamlpeOne
                 {
                     _ = ex;
                 }
+            }
+        }
+
+        private void SetChannel(int nCH)
+        {
+            if (nCH == -1)
+            {
+                if (nChannelNumber == 1)
+                    nChannelNumber = 2;
+                else if (nChannelNumber == 2)
+                    nChannelNumber = 1;
+            }
+            else
+                nChannelNumber = nCH;
+
+            if (nChannelNumber == 1)
+            {
+                SendCommand(Constants.CMD_SETCHANNEL1);
+                lblChannelName.Text = "Channel 1";
+            }
+            else if (nChannelNumber == 2)
+            {
+                SendCommand(Constants.CMD_SETCHANNEL2);
+                lblChannelName.Text = "Channel 2";
             }
         }
         
@@ -953,6 +981,19 @@ namespace SciChartExamlpeOne
             e = null;
         }
 
-#endregion
+        private void rbChannel_Checked(object sender, RoutedEventArgs e)
+        {
+            if (!rbChannelOne.IsLoaded)
+                return;
+            if (!rbChannelTwo.IsLoaded)
+                return;
+            if (rbChannelOne.IsChecked == true)
+                SetChannel(1);
+            else if (rbChannelTwo.IsChecked == true)
+                SetChannel(2);
+        }
+
+        #endregion
+
     }
 }
