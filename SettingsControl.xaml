@@ -118,10 +118,28 @@
                         <CheckBox VerticalAlignment="Center" HorizontalAlignment="Center" IsChecked="True" x:Name="cbxAutoGain" Content="Device Auto Gain Set" />
                     </StackPanel>
                 </local:STabItem>
-                <local:STabItem  x:Name="Preferences">
+                <local:STabItem  x:Name="Neuro_14">
                     <local:STabItem.Header>
-                        <TextBlock Text="Preferences" />
+                        <TextBlock Text="Neuro 14" />
                     </local:STabItem.Header>
+                    <StackPanel x:Name="mnuNeuro14" Margin="10" Style="{StaticResource StackStyle}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Neuro 14 Server IP" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="20,0,20,0"/>
+                            <TextBox x:Name="edxN14ServerIP" MinWidth="150" TextAlignment="Center" Text="127.0.0.100" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Neuro 14 Server Port" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="20,0,20,0"/>
+                            <TextBox x:Name="edxN14ServerPort" MinWidth="50" TextAlignment="Center" Text="2000" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Neuro 20 Server IP" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="20,0,20,0"/>
+                            <TextBox x:Name="edxN20ServerIP" MinWidth="150" TextAlignment="Center" Text="127.0.0.200" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Neuro 20 Server Port" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="20,0,20,0"/>
+                            <TextBox x:Name="edxN20ServerPort" MinWidth="50" TextAlignment="Center" Text="2000" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </StackPanel>
                 </local:STabItem>
                 <local:STabItem x:Name="Tools">
                     <local:STabItem.Header>
@@ -143,7 +161,7 @@
                                 This Software belongs to Neuro 14 and Neuro 20 EMG Test Suit. <LineBreak/>
                                 For Any information contact info@nikavapishro.ir . <LineBreak/>
                                 All Rights Reseved for SHAFA DANESH HOONAM CO. ©2020.<LineBreak/>
-                                ¤ Designed and Manufactered in I.R.IRAN. ¤ 
+                                ¤ Designed and Developed in I.R.IRAN. ¤ 
                             </TextBlock>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
@@ -153,15 +171,15 @@
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="20 0">
                             <TextBlock>Name :</TextBlock>
-                            <TextBox Name="txtDrName"  MinWidth="200"/>
+                            <TextBox Name="txtDrName"  MinWidth="200" Width="165" Text="SHAFA DANESH HOONAM"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="20 0">
                             <TextBlock>Address :</TextBlock>
-                            <TextBox Name="txtAddress"  MinWidth="400" MinLines="3"/>
+                            <TextBox Name="txtAddress"  MinWidth="400" MinLines="3" Width="400" Text="No 492 - 7th Tir Blv - Marlik - Tehran - I.R.IRAN"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="20 0">
                             <TextBlock>Phone :</TextBlock>
-                            <TextBox Name="txtPhone"  MinWidth="100"/>
+                            <TextBox Name="txtPhone"  MinWidth="100" Text="02165151622"/>
                         </StackPanel>
                     </StackPanel>
                 </local:STabItem>

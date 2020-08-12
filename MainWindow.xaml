@@ -36,12 +36,13 @@
                 <RowDefinition Height ="Auto"/>
                 <RowDefinition Height ="*"/>
             </Grid.RowDefinitions>
-            
+
             <!--Window chrome-->
             <Grid x:Name="TitelBar" Grid.Row="0" Height="30" Background="#41b1e1">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
@@ -49,24 +50,36 @@
                     <Image Source="/Resources/favicon.ico" Width="18" Margin="2" HorizontalAlignment="Left" VerticalAlignment="Center" />
                     <TextBlock x:Name="strTitle" FontFamily="Arial" VerticalAlignment="Center" Margin="4 3 0 0" />
                 </StackPanel>
-                <Button Grid.Column="1"  Click="SettingVisibilityChange"  Style="{StaticResource CommandButtonStyle}"
+                <Button x:Name="btnSwitch2N14" Grid.Column="1" Margin="20 0" Click="SwithcToN14SW"  Style="{StaticResource CommandButtonStyle}"
+                        WindowChrome.IsHitTestVisibleInChrome="True" ToolTip="Switch to Neuro 14 Software" KeyDown="MainWindow_KeyDown">
+                    <fa:ImageAwesome Icon="Asterisk" Width="15" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="DarkBlue" />
+                </Button>
+                <Button Grid.Column="2"  Click="SettingVisibilityChange"  Style="{StaticResource CommandButtonStyle}"
                         WindowChrome.IsHitTestVisibleInChrome="True" ToolTip="Settings">
                     <fa:ImageAwesome Icon="Gear" Width="15" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="DarkBlue" />
                 </Button>
                 <!--Caption buttons-->
-                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                <StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right">
                     <Button Style="{StaticResource MinimizeButtonStyle}" WindowChrome.IsHitTestVisibleInChrome="True" ToolTip="Minimize"
                         Command="{x:Static SystemCommands.MinimizeWindowCommand}"/>
                     <Button x:Name="RestoreButton" Visibility="Visible" Style="{StaticResource RestoreButtonStyle}" 
                         Command="{x:Static SystemCommands.RestoreWindowCommand}" WindowChrome.IsHitTestVisibleInChrome="True" ToolTip="Restore"/>
                     <Button x:Name="MaximizeButton" Visibility="Collapsed" Style="{StaticResource MaximizeButtonStyle}" 
                         Command="{x:Static SystemCommands.MaximizeWindowCommand}" WindowChrome.IsHitTestVisibleInChrome="True" ToolTip="Maximize" />
-                    <Button Style="{StaticResource CloseButtonStyle}" WindowChrome.IsHitTestVisibleInChrome="True" ToolTip="Close"
+                    <Button x:Name="CloseButton" Style="{StaticResource CloseButtonStyle}" WindowChrome.IsHitTestVisibleInChrome="True" ToolTip="Close"
                         Command="{x:Static SystemCommands.CloseWindowCommand}"/>
                 </StackPanel>
             </Grid>
 
             <Grid Grid.Row="1" x:Name="AppArea">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="67*"/>
+                    <ColumnDefinition Width="477*"/>
+                    <ColumnDefinition Width="185*"/>
+                    <ColumnDefinition Width="34*"/>
+                    <ColumnDefinition Width="12*"/>
+                    <ColumnDefinition Width="18*"/>
+                </Grid.ColumnDefinitions>
                 <!--Background="#222"-->
                 <!-- Add some RowDefinitions -->
                 <Grid.RowDefinitions>
@@ -79,12 +92,12 @@
                                 Grid.Row="0" Grid.Column="0" Panel.ZIndex="1" Grid.RowSpan="4" Visibility="Collapsed"
                                 tz:Transitionz.Opacity="{tz:OpacityParams From=0, To=1, Duration=200, TransitionOn=Visibility}"
                                 tz:Transitionz.Translate="{tz:TranslateParams From='10,0', To='0,0', Duration=200, TransitionOn=Visibility}"
-                                tz:Transitionz.Visibility="{Binding SettingVisible }"
+                                tz:Transitionz.Visibility="{Binding SettingVisible }" Grid.ColumnSpan="6"
                                 ></local:SettingsControl>
                 <!-- Oscope Settings -->
-                <Grid Grid.Row="0" Margin="10,0,10,0">
+                <Grid Grid.Row="0" Margin="10,0,10,0" Grid.ColumnSpan="6">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="1.5*"/>
                         <ColumnDefinition Width="2*"/>
                         <ColumnDefinition Width="2*"/>
                         <ColumnDefinition Width="*"/>
@@ -103,7 +116,7 @@
                     <!--Channel Select-->
                     <TextBlock Grid.Column="0" Text="Channel" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="20,0,20,0"/>
                     <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
-                        <RadioButton x:Name="rbChannelOne" Margin="2 0" Background="LightPink" Foreground="DarkRed" GroupName="rbChannel" IsChecked="True"  Checked="rbChannel_Checked">CH1</RadioButton>
+                        <RadioButton x:Name="rbChannelOne" Margin="2 0" Background="LightPink" Foreground="DarkRed" GroupName="rbChannel" Checked="rbChannel_Checked">CH1</RadioButton>
                         <RadioButton x:Name="rbChannelTwo" Margin="2 0" Background="LightGreen" Foreground="DarkGreen" GroupName="rbChannel" Checked="rbChannel_Checked" >CH2</RadioButton>
                     </StackPanel>
                     <!--Time Division-->
@@ -111,7 +124,7 @@
                     <local:NumericUpDown x:Name="numTimeDiv" Grid.Column="3" ValueChanged="numTimeDiv_ValueChanged"/>
                     <!--Volt Division-->
                     <TextBlock Grid.Column="4" Text="Volt Division (V)" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,0,20,0" />
-                    <local:NumericUpDown x:Name="numVoltDiv" Grid.Column="5" ValueChanged="numVoltDiv_ValueChanged"/>
+                    <local:NumericUpDown x:Name="numVoltDiv" Grid.Column="5" ValueChanged="numVoltDiv_ValueChanged" Loaded="numVoltDiv_Loaded"/>
                     <!--Low Cut Filter-->
                     <TextBlock Grid.Column="6" Text="Low Pass Filter" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,0,20,0"/>
                     <ComboBox Grid.Column="7" Width="70" x:Name="cmbLowPassFilter" HorizontalAlignment="Stretch" SelectionChanged="cmbFilter_SelectionChanged" ItemsSource="{Binding Source={StaticResource FilterLowPass}}" />
@@ -129,7 +142,7 @@
                 <Button
                     Grid.Row="1"
                     Panel.ZIndex="2"
-                    Margin="10"
+                    Margin="10,10,0,0"
                     x:Name="btnPlayPause"
                     Background="Transparent"
                     BorderBrush="Transparent"
@@ -141,16 +154,16 @@
                         <fa:ImageAwesome x:Name="icoPlayPause" Icon="PlayCircleOutline" Margin="2,2,2,2" Foreground="Snow"/>
                     </StackPanel>
                 </Button>
-                <s:SciChartSurface Grid.Row="1" x:Name="sciChartSurface">
+                <s:SciChartSurface Grid.Row="1" x:Name="sciChartSurface" Grid.ColumnSpan="6">
                     <!--Define Renderable Series-->
                     <s:SciChartSurface.RenderableSeries>
-                        <s:FastLineRenderableSeries x:Name="LineSeries" Stroke="#FF4083B7"/>
-                        <s:FastLineRenderableSeries x:Name="FilteredSeries" Stroke="LightBlue"/>
+                        <s:FastLineRenderableSeries x:Name="LineSeries" Stroke="#FF4083B7" s:LegendModifier.IncludeSeries="False" IsSelected="False" IsVisible="False"/>
+                        <s:FastLineRenderableSeries x:Name="FilteredSeries" Stroke="LightBlue"  s:LegendModifier.IncludeSeries="False"/>
                     </s:SciChartSurface.RenderableSeries>
                     <!-- Create X-Axis -->
                     <s:SciChartSurface.XAxis>
                         <s:NumericAxis AxisTitle="Time (ms)" DrawMajorTicks="False" DrawMinorTicks="False"
-                               DrawMajorBands="False" DrawMajorGridLines="False" DrawMinorGridLines="False"
+                               DrawMajorBands="False" DrawMajorGridLines="True" DrawMinorGridLines="False"
                                DrawLabels="False" AutoRange="Never" TextFormatting="0:e"/>
                     </s:SciChartSurface.XAxis>
                     <!--Create Y-Axis-->
@@ -165,7 +178,7 @@
                                                 RubberBandFill="#33FFFFFF" RubberBandStroke="#AAFFFFFF"
                                                 RubberBandStrokeDashArray="2 2"/>
                             <!-- Allow Zoom to Extents on double click -->
-                            <s:ZoomExtentsModifier ExecuteOn="MouseDoubleClick" />
+                            <!--<s:ZoomExtentsModifier ExecuteOn="MouseDoubleClick" />-->
                             <!-- Allow pan on Right mouse drag -->
                             <s:ZoomPanModifier ExecuteOn="MouseRightButton" ClipModeX="None" />
                             <!-- Allow Dragging YAxis to Scale -->
@@ -187,10 +200,10 @@
                 </s:SciChartSurface>
 
                 <!-- Add a Scrollbar, and bind to SciChartSurface.XAxis -->
-                <s:SciChartScrollbar Grid.Row="2" Axis="{Binding ElementName=sciChartSurface, Path=XAxis}"/>
+                <s:SciChartScrollbar Grid.Row="2" Axis="{Binding ElementName=sciChartSurface, Path=XAxis}" Grid.ColumnSpan="6"/>
 
                 <!-- Add StatusBar -->
-                <StatusBar Grid.Row="3" >
+                <StatusBar Grid.Row="3" Grid.ColumnSpan="6" >
                     <StatusBar.ItemsPanel>
                         <ItemsPanelTemplate>
                             <Grid>
@@ -200,6 +213,7 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="4*"/>
                                     <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
@@ -217,6 +231,9 @@
                     </StatusBarItem>
                     <StatusBarItem Grid.Column="3" HorizontalAlignment="Left">
                         <TextBlock x:Name="lblComDataReceived" />
+                    </StatusBarItem>
+                    <StatusBarItem Grid.Column="4" HorizontalAlignment="Left">
+                        <TextBlock x:Name="lblTCPStatus" />
                     </StatusBarItem>
                 </StatusBar>
             </Grid>

@@ -14,9 +14,23 @@ namespace SciChartExamlpeOne
         public const byte PACKETLEN = FRMLEN + HDRLEN;
         public const int BUFLENCHECK = (HDRLEN + FRMLEN) * 2;
         public const string HDRSTR = "\xFF\x00\xFE\x01\xFD";
+        public const string HDRSTRN20 = "\xFF\x00\xFE\x01\xFC";
         public const int DEFAULTBAUD = (460800);
         public const int DEFAULTADCBIT = (8);
         public const int DEFAULTHWVERSION = (1);
+
+        //TCP
+        public const int NEURO14SALUTINTERVAL = 2000;
+        public const string NERO14SALUT = "HI._I_AM_NEURO_14!";
+        public const string NERO20SALUT = "HI. I AM NEURO 20!";
+        public const string NEURO20BYEBYE = "HEY NEURO 20, CLOSE!";
+        public const string NEURO20MAXI = "NEURO 20, MAXIMIZE!";
+        public const string NEURO20MINI = "NEURO 20, MINIMIZE!";
+        public const string NEURO20CON = "SW2 CONNECT";
+        public const string NEURO20DIS = "SW2 DISCONNECT";
+        public const string NEURO14CON = "SW1 CONNECT";
+        public const string NEURO14DIS = "SW1 DISCONNECT";
+
 
         //COMMAND
         public const byte CMD_LIVE = 0x11;

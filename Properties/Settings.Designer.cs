@@ -193,5 +193,53 @@ namespace SciChartExamlpeOne.Properties {
                 this["HWVERSION"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("127.0.0.100")]
+        public string N14SERVERIP {
+            get {
+                return ((string)(this["N14SERVERIP"]));
+            }
+            set {
+                this["N14SERVERIP"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("2000")]
+        public int N14SERVERPORT {
+            get {
+                return ((int)(this["N14SERVERPORT"]));
+            }
+            set {
+                this["N14SERVERPORT"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("127.0.0.200")]
+        public string N20SERVERIP {
+            get {
+                return ((string)(this["N20SERVERIP"]));
+            }
+            set {
+                this["N20SERVERIP"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("2000")]
+        public int N20SERVERPORT {
+            get {
+                return ((int)(this["N20SERVERPORT"]));
+            }
+            set {
+                this["N20SERVERPORT"] = value;
+            }
+        }
     }
 }

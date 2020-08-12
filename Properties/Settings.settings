@@ -47,5 +47,17 @@
     <Setting Name="HWVERSION" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">1</Value>
     </Setting>
+    <Setting Name="N14SERVERIP" Type="System.String" Scope="User">
+      <Value Profile="(Default)">127.0.0.100</Value>
+    </Setting>
+    <Setting Name="N14SERVERPORT" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">2000</Value>
+    </Setting>
+    <Setting Name="N20SERVERIP" Type="System.String" Scope="User">
+      <Value Profile="(Default)">127.0.0.200</Value>
+    </Setting>
+    <Setting Name="N20SERVERPORT" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">2000</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

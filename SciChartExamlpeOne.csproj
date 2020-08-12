@@ -113,6 +113,7 @@
       <DependentUpon>NumericUpDown.xaml</DependentUpon>
     </Compile>
     <Compile Include="SavingWaveProvider.cs" />
+    <Compile Include="Server.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="SettingsControl.xaml.cs">
       <DependentUpon>SettingsControl.xaml</DependentUpon>

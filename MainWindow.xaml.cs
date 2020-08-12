@@ -17,6 +17,10 @@ using System.Windows.Input;
 using FontAwesome.WPF;
 using System.Reflection;
 using System.Collections.Generic;
+using System.Net.Sockets;
+using System.Linq;
+using System.Net;
+using System.IO;
 
 namespace SciChartExamlpeOne
 {
@@ -105,6 +109,15 @@ namespace SciChartExamlpeOne
         #region variables
         public decimal _adc_ConvertNum2Value;
 
+        #region TCP connections
+        private TcpClient _tcp_tcpClient;
+        private delegate void tcpUpdateLogCallBack(string strMessage);
+        Server _tcp_myserver;
+        Thread _tcp_tServerListener;
+        public bool _tcp_bTCPActivate = false;
+        DispatcherTimer _tcp_tmHello;
+        #endregion
+
         #region save holders
         private int _save_RefreshValue;
         private bool _save_SweepGraph;
@@ -113,6 +126,10 @@ namespace SciChartExamlpeOne
         private int _save_SoundLatencyMargin;
         private int _save_AdcBitNum;
         private int _save_HardWaveVersion;
+        private string _save_N20ServerIP;
+        private int _save_N20ServerPort;
+        private int _save_N14ServerPort;
+        private string _save_N14ServerIP;
         #endregion
 
         #region Com port
@@ -162,12 +179,13 @@ namespace SciChartExamlpeOne
             InitializeComponent();
             LoadSettings();
             InitComponents();
+            InitTCPConnection();
             StateChanged += MainWindowStateChangeRaised;
             LoadSettings();
             this.Loaded += onLoaded;
             setPage.Loaded += SetPage_Loaded;
             _com_bConnectionStatus = false;
-            WindowState = WindowState.Maximized;
+            WindowState = _tcp_bTCPActivate ? WindowState.Minimized : WindowState.Maximized;
             MainWindowStateChangeRaised(null,null);
         }
 
@@ -212,7 +230,8 @@ namespace SciChartExamlpeOne
         // Close
         private void CommandBinding_Executed_Close(object sender, ExecutedRoutedEventArgs e)
         {
-            SystemCommands.CloseWindow(this);
+            if(!_tcp_bTCPActivate)
+                SystemCommands.CloseWindow(this);
         }
 
         // State change
@@ -239,21 +258,37 @@ namespace SciChartExamlpeOne
             this.Title = "Neuro 2014 EMG Test Suit";
             strTitle.Text = "Neuro 2014 EMG Test Suit";
             lblComState.Text = "Disconnected";
-            nChannelNumber = 1;
+            string[] args = Environment.GetCommandLineArgs();
+            foreach (string arg in args)
+            {
+                if (arg == Constants.NERO14SALUT)
+                {
+                    _tcp_bTCPActivate = true;
+                    lblTCPStatus.Text = "Neuro 14 Connected!";
+                    CloseButton.Visibility = Visibility.Hidden;
+                }
+            }
+            btnSwitch2N14.Visibility = _tcp_bTCPActivate == true ? Visibility.Visible : Visibility.Hidden;
+            rbChannelTwo.IsChecked = true;
+            nChannelNumber = 2;
             isDrawingSignal = false;
             cbxSound.IsChecked = true;
-            cbxNotch.IsChecked = false;
+            cbxNotch.IsChecked = true;
             _snd_isPlaying = false;
             _sci_timeIndex = new TimeIndex();
             cmbLowPassFilter.SelectedIndex = nIdxLowPassCombo;
             cmbHighPassFilter.SelectedIndex = nIdxHighPassCombo;
+            numVoltDiv.nIsVoltDiv = 1;
             numVoltDiv.SetValue(Properties.Settings.Default.VOLTDIV);
             numTimeDiv.SetValue(Properties.Settings.Default.TIMEDIV);
             _sci_timeIndex.setScale(numTimeDiv.Value.ToDouble());
             _com_connecttimer = new DispatcherTimer(DispatcherPriority.Normal);
             _com_connecttimer.Interval = TimeSpan.FromMilliseconds(1000.0);
             _com_connecttimer.Tick += RefreshConnection;
-            _com_connecttimer.Start();
+            if (_tcp_bTCPActivate)
+                _com_connecttimer.Stop();
+            else
+                _com_connecttimer.Start();
             _snd_playtimer = new DispatcherTimer(DispatcherPriority.Normal);
             _snd_playtimer.Interval = TimeSpan.FromMilliseconds(10.0);
             _snd_playtimer.Tick += SoundPlayTimer;
@@ -263,9 +298,104 @@ namespace SciChartExamlpeOne
             setPage.btnCommand.Click += Command_btn_Click_Sound;
         }
 
+        private void numVoltDiv_Loaded(object sender, RoutedEventArgs e)
+        {
+            numVoltDiv.nIsVoltDiv = 1;
+        }
+
         #endregion
 
-#region SciChart
+        #region TCP connection
+        private void InitTCPConnection()
+        {
+            _tcp_tmHello = new DispatcherTimer();
+            _tcp_tmHello.Interval = TimeSpan.FromMilliseconds(Constants.NEURO14SALUTINTERVAL);
+            _tcp_tmHello.Tick += _tcp_SayHello;
+            _tcp_tmHello.Start();
+            _tcp_myserver = new Server(_save_N20ServerIP, _save_N20ServerPort);
+            _tcp_myserver.UpdateConnection += ChangeConnectionState;
+            _tcp_tServerListener = new Thread(delegate () { _tcp_myserver.StartListener(); });
+            _tcp_tServerListener.Start();
+
+            lblTCPStatus.Text = "Server Started!";
+        }
+
+        public void ChangeConnectionState(Object Sender, EventArgs e)
+        {
+            this.Dispatcher.Invoke(() =>
+            {
+                if (_tcp_myserver.bChangeComRequest == true) { 
+                    _tcp_myserver.bChangeComRequest = false;
+                    if (_tcp_myserver.nSW2Connection == 1)
+                        _com_bConnectionStatus = false;
+                    else
+                        _com_bConnectionStatus = true;
+                    Connect_Comm(null, null);
+                    rbChannel_Checked(null, null);
+                }
+                if (_tcp_myserver.bCloseRequest == true)
+                {
+                    _tcp_myserver.bCloseRequest = false;
+                    _tcp_CloseRequest();
+                }
+                if (_tcp_myserver.bChangeSizeRequest == true)
+                {
+                    _tcp_myserver.bChangeSizeRequest = false;
+                    Application.Current.MainWindow.WindowState = _tcp_myserver.nWindowsState == 0 ? WindowState.Minimized : WindowState.Maximized;
+                    Topmost = _tcp_myserver.nWindowsState == 0 ? false : true;
+                    if (_tcp_myserver.nWindowsState == 0)
+                        Hide();
+                    else
+                        Show();
+                }
+            });
+        }
+
+        private void _tcp_CloseRequest()
+        {
+            Close();
+        }
+
+        private void _tcp_SayHello(object sender, EventArgs e)
+        {
+            if (!_tcp_bTCPActivate)
+                return;
+
+            _tcp_tcpClient = new TcpClient();
+            try
+            {
+                _tcp_tcpClient.Connect(IPAddress.Parse(_save_N14ServerIP), _save_N14ServerPort);
+                string strMessage = Constants.NERO20SALUT;
+                //lbxStatus.Items.Add("HI. I AM NEURO 20!");
+                Stream stm = _tcp_tcpClient.GetStream();
+                ASCIIEncoding asen = new ASCIIEncoding();
+                byte[] ln = asen.GetBytes(strMessage.Length.ToString());
+                byte[] ba = asen.GetBytes(strMessage);
+                stm.WriteByte((byte)(strMessage.Length / 256));
+                stm.WriteByte((byte)(strMessage.Length % 256));
+                stm.Write(ba, 0, ba.Length);
+                _tcp_tcpClient.Close();
+            }
+            catch (Exception exp)
+            {
+                //
+            }
+        }
+
+        private void SwithcToN14SW(object sender, RoutedEventArgs e)
+        {
+            icoPlayPause.Icon = FontAwesomeIcon.PlayCircleOutline ;
+            isDrawingSignal = false ;
+
+            var scope = FocusManager.GetFocusScope(btnSwitch2N14); // elem is the UIElement to unfocus
+            FocusManager.SetFocusedElement(scope, null); // remove logical focus
+            Keyboard.ClearFocus(); // remove keyboard focus
+                        
+            Hide();
+        }
+        #endregion
+
+        #region SciChart
         private void onLoaded(object sender, RoutedEventArgs routedEventArgs) {
 
             // Instantiate the ViewportManager here
@@ -283,9 +413,10 @@ namespace SciChartExamlpeOne
             _filterData.ResetFilter(FilterTypes.Notch, Properties.Settings.Default.SAMPLERATE, Constants.FIR_NOTCH, 50.0);
             _filterData.isNotchEnable = (bool)cbxNotch.IsChecked;
 
-            _originalData.SeriesName = "CHANNEL 1";
+            _originalData.SeriesName = "Pure Data";
+            
             //_filteredData.FilteredDataSeries.SeriesName = "Moving Average";
-            _filterData._DataSeries.SeriesName = "Filterd";
+            _filterData._DataSeries.SeriesName = "Filterd Data";
 
             //_originalData.FifoCapacity = nTimeDataRange;
             //lineData.FifoCapacity = 1000 ;
@@ -456,6 +587,8 @@ namespace SciChartExamlpeOne
 
         private void cbxNotch_Change(object sender, RoutedEventArgs e)
         {
+            if (!cbxNotch.IsLoaded)
+                return;
             _filterData.isNotchEnable = (bool)cbxNotch.IsChecked;
         }
 
@@ -710,7 +843,7 @@ namespace SciChartExamlpeOne
             int nBufLimit = (Constants.HDRLEN + Constants.FRMLEN * nNOByte) * 2 ;
             while ((index != -1) & (bufferString.Length > nBufLimit))
             {
-                index = bufferString.IndexOf(Constants.HDRSTR);
+                index = bufferString.IndexOf(Constants.HDRSTRN20);
                 if (index > -1)
                 {
                     nTotPacketRecieved++;
@@ -844,19 +977,25 @@ namespace SciChartExamlpeOne
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-
-            MessageBoxResult result = MessageBox.Show(
-                    "Would you like to save Settings?",
-                    "Confirmation",
-                    MessageBoxButton.YesNoCancel,
-                    MessageBoxImage.Question);
-
-            if (result == MessageBoxResult.Cancel)
+            bool bSaveValidated = _tcp_bTCPActivate;
+            if (!_tcp_bTCPActivate)
             {
-                e.Cancel = true;
-                return;
+                MessageBoxResult result = MessageBox.Show(
+                        "Would you like to save Settings?",
+                        "Confirmation",
+                        MessageBoxButton.YesNoCancel,
+                        MessageBoxImage.Question);
+                if (result == MessageBoxResult.Cancel)
+                {
+                    e.Cancel = true;
+                    return;
+                }
+                else if (result == MessageBoxResult.Yes)
+                    bSaveValidated = true;
             }
-            else if (result == MessageBoxResult.Yes)
+            
+           
+            if (bSaveValidated)
             {
                 //Save Settings
                 Properties.Settings.Default.LOWCUTINDEX = (int)cmbLowPassFilter.SelectedIndex;
@@ -876,6 +1015,10 @@ namespace SciChartExamlpeOne
             StopSoundServices();
             _snd_player.Dispose();
             //_snd_AsioPlayer.Dispose();
+
+            _tcp_myserver.bCloseOrder = true;
+            _tcp_myserver.server.Stop();
+            _tcp_bTCPActivate = false;
         }
 
 #endregion
@@ -890,6 +1033,10 @@ namespace SciChartExamlpeOne
             _save_SoundLatencyMargin = Properties.Settings.Default.SOUNDLATENCY;
             _save_AdcBitNum = Properties.Settings.Default.ADCBITNUM;
             _save_HardWaveVersion = Properties.Settings.Default.HWVERSION;
+            _save_N20ServerPort = Properties.Settings.Default.N20SERVERPORT;
+            _save_N20ServerIP = Properties.Settings.Default.N20SERVERIP;
+            _save_N14ServerPort = Properties.Settings.Default.N14SERVERPORT;
+            _save_N14ServerIP = Properties.Settings.Default.N14SERVERIP;
         }
 
         private void LoadSettingContent()
@@ -901,7 +1048,10 @@ namespace SciChartExamlpeOne
             setPage.edxSoundLatencyMargin.Text = _save_SoundLatencyMargin.ToString();
             setPage.ConfigCombo(_save_AdcBitNum, ref setPage.cmbADCRes, Constants.DEFAULTADCBIT);
             setPage.ConfigCombo(_save_HardWaveVersion, ref setPage.cmbHWVersion, Constants.DEFAULTHWVERSION);
-
+            setPage.edxN20ServerIP.Text = _save_N20ServerIP;
+            setPage.edxN20ServerPort.Text = _save_N20ServerPort.ToString();
+            setPage.edxN14ServerIP.Text = _save_N14ServerIP;
+            setPage.edxN14ServerPort.Text = _save_N14ServerPort.ToString();
         }
 
         private void SetSettings()
@@ -913,6 +1063,10 @@ namespace SciChartExamlpeOne
             _save_SoundLatencyMargin = Convert.ToInt32(setPage.edxSoundLatencyMargin.Text);
             _save_AdcBitNum = Convert.ToInt32(setPage.cmbADCRes.Text);
             _save_HardWaveVersion = Convert.ToInt32(setPage.cmbHWVersion.Text);
+            _save_N20ServerIP = setPage.edxN20ServerIP.Text;
+            _save_N20ServerPort = Convert.ToInt32(setPage.edxN20ServerPort.Text);
+            _save_N14ServerIP = setPage.edxN14ServerIP.Text;
+            _save_N14ServerPort = Convert.ToInt32(setPage.edxN14ServerPort.Text);
         }
 
         private void SaveSettings()
@@ -924,6 +1078,10 @@ namespace SciChartExamlpeOne
             Properties.Settings.Default.SOUNDLATENCY = _save_SoundLatencyMargin;
             Properties.Settings.Default.ADCBITNUM = _save_AdcBitNum;
             Properties.Settings.Default.HWVERSION = _save_HardWaveVersion;
+            Properties.Settings.Default.N20SERVERPORT = _save_N20ServerPort;
+            Properties.Settings.Default.N20SERVERIP = _save_N20ServerIP;
+            Properties.Settings.Default.N14SERVERPORT = _save_N14ServerPort;
+            Properties.Settings.Default.N14SERVERIP = _save_N14ServerIP;
         }
 
         private void ApplySettings()
@@ -974,11 +1132,24 @@ namespace SciChartExamlpeOne
 
         void MainWindow_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Space)
+            if (e.Key == Key.Space || e.Key == Key.Enter)
             {
                 btnPlayPause_Click(null, null);
             }
+            else if (e.Key == Key.F1)
+            {
+                numVoltDiv.SetValue(0.0005M);
+            }
+            else if (e.Key == Key.F2)
+            {
+                numVoltDiv.SetValue(0.002M);
+            }
+            else if (e.Key == Key.F3)
+            {
+                numVoltDiv.SetValue(0.005M);
+            }
             e = null;
+            btnPlayPause.Focus();
         }
 
         private void rbChannel_Checked(object sender, RoutedEventArgs e)

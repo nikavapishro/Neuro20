@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace SciChartExamlpeOne
 {
@@ -43,14 +44,16 @@ namespace SciChartExamlpeOne
         {
             double res = 0.0;
             x.Add(yValue);
-            if (++nLen >= nOrder) {
+            nLen++;
+            if (nLen >= nOrder)
+            {
                 res = a[0] * a[2] * x[0] + a[1] * x[1] + a[0] * a[2] * x[2];
                 res += b[1] * y[0] + b[0] * y[1];
                 x.RemoveAt(0);
                 y.RemoveAt(0);
                 nLen--;
             }
-            y.Add(res);
+            y.Add( double.IsNaN(res) ? 0.0 : res);
             return res;
         }
     }
