@@ -311,7 +311,9 @@ namespace SciChartExamlpeOne
             _tcp_tmHello = new DispatcherTimer();
             _tcp_tmHello.Interval = TimeSpan.FromMilliseconds(Constants.NEURO14SALUTINTERVAL);
             _tcp_tmHello.Tick += _tcp_SayHello;
-            _tcp_tmHello.Start();
+            //Connection Formation NO2
+            //_tcp_tmHello.Start();
+            _tcp_tmHello.Stop();
             _tcp_myserver = new Server(_save_N20ServerIP, _save_N20ServerPort);
             _tcp_myserver.UpdateConnection += ChangeConnectionState;
             _tcp_tServerListener = new Thread(delegate () { _tcp_myserver.StartListener(); });
@@ -343,10 +345,12 @@ namespace SciChartExamlpeOne
                     _tcp_myserver.bChangeSizeRequest = false;
                     Application.Current.MainWindow.WindowState = _tcp_myserver.nWindowsState == 0 ? WindowState.Minimized : WindowState.Maximized;
                     Topmost = _tcp_myserver.nWindowsState == 0 ? false : true;
-                    if (_tcp_myserver.nWindowsState == 0)
-                        Hide();
-                    else
-                        Show();
+                    
+                    //Disabled for Communication Method 2
+                    //if (_tcp_myserver.nWindowsState == 0)
+                    //Hide();
+                    //else
+                    //Show();
                 }
             });
         }
@@ -390,8 +394,13 @@ namespace SciChartExamlpeOne
             var scope = FocusManager.GetFocusScope(btnSwitch2N14); // elem is the UIElement to unfocus
             FocusManager.SetFocusedElement(scope, null); // remove logical focus
             Keyboard.ClearFocus(); // remove keyboard focus
-                        
-            Hide();
+
+            //Disabled for debugging
+            //Hide();
+
+            WindowState = WindowState.Minimized;
+            _com_bConnectionStatus = true;
+            Connect_Comm(null, null);
         }
         #endregion
 

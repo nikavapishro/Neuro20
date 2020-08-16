@@ -44,22 +44,23 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
                     <!--App icon-->
                     <Image Source="/Resources/favicon.ico" Width="18" Margin="2" HorizontalAlignment="Left" VerticalAlignment="Center" />
                     <TextBlock x:Name="strTitle" FontFamily="Arial" VerticalAlignment="Center" Margin="4 3 0 0" />
                 </StackPanel>
-                <Button x:Name="btnSwitch2N14" Grid.Column="1" Margin="20 0" Click="SwithcToN14SW"  Style="{StaticResource CommandButtonStyle}"
+                <Button x:Name="btnSwitch2N14" Grid.Column="2" Margin="20 0" Click="SwithcToN14SW"  Style="{StaticResource CommandButtonStyle}"
                         WindowChrome.IsHitTestVisibleInChrome="True" ToolTip="Switch to Neuro 14 Software" KeyDown="MainWindow_KeyDown">
                     <fa:ImageAwesome Icon="Asterisk" Width="15" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="DarkBlue" />
                 </Button>
-                <Button Grid.Column="2"  Click="SettingVisibilityChange"  Style="{StaticResource CommandButtonStyle}"
+                <Button Grid.Column="3"  Click="SettingVisibilityChange"  Style="{StaticResource CommandButtonStyle}"
                         WindowChrome.IsHitTestVisibleInChrome="True" ToolTip="Settings">
                     <fa:ImageAwesome Icon="Gear" Width="15" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="DarkBlue" />
                 </Button>
                 <!--Caption buttons-->
-                <StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right">
+                <StackPanel Grid.Column="4" Orientation="Horizontal" HorizontalAlignment="Right">
                     <Button Style="{StaticResource MinimizeButtonStyle}" WindowChrome.IsHitTestVisibleInChrome="True" ToolTip="Minimize"
                         Command="{x:Static SystemCommands.MinimizeWindowCommand}"/>
                     <Button x:Name="RestoreButton" Visibility="Visible" Style="{StaticResource RestoreButtonStyle}" 
