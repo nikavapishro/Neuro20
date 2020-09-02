@@ -98,20 +98,24 @@
                     </local:STabItem.Header>
                     <StackPanel x:Name="mnuConnections" Margin="10" Style="{StaticResource StackStyle}">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="COM PORT Number" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="20,0,20,0"/>
+                            <TextBlock Text="COM PORT Number" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="20,0"/>
                             <ComboBox x:Name="cmbComportName" HorizontalAlignment="Stretch" MinWidth="100" />
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="CONNECTION SPEED" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,0,20,0" />
+                            <TextBlock Text="CONNECTION SPEED" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,0" />
                             <ComboBox SelectedIndex="8" x:Name="cmbBaudRate" HorizontalAlignment="Stretch" MinWidth="100" ItemsSource="{Binding Source={StaticResource ComSpeed}}" SelectedValue="{Binding ComSpeed}" />
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="ADC Resolution" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,0,20,0" />
+                            <TextBlock Text="ADC Resolution" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,0" />
                             <ComboBox SelectedIndex="0" x:Name="cmbADCRes" HorizontalAlignment="Stretch" MinWidth="100" ItemsSource="{Binding Source={StaticResource AdcRes}}" SelectedValue="{Binding AdcRes}" />
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="ADC Resolution" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,0,20,0" />
+                            <TextBlock Text="ADC Resolution" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,0" />
                             <ComboBox SelectedIndex="0" x:Name="cmbHWVersion" HorizontalAlignment="Stretch" MinWidth="100" ItemsSource="{Binding Source={StaticResource HWVer}}" SelectedValue="{Binding HWVer}" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Calibration Gain" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20 0"/>
+                            <TextBox MinWidth="100" Name="txbCalibGain"/>
                         </StackPanel>
                         <Button HorizontalAlignment="Center" Content="Connect" x:Name="btnConnect"  Width="70"/>
                         <Button HorizontalAlignment="Center" Content="Command" x:Name="btnCommand"  Width="70"/>

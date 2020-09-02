@@ -130,6 +130,7 @@ namespace SciChartExamlpeOne
         private int _save_N20ServerPort;
         private int _save_N14ServerPort;
         private string _save_N14ServerIP;
+        private decimal _save_SWGain;
         #endregion
 
         #region Com port
@@ -1046,6 +1047,7 @@ namespace SciChartExamlpeOne
             _save_N20ServerIP = Properties.Settings.Default.N20SERVERIP;
             _save_N14ServerPort = Properties.Settings.Default.N14SERVERPORT;
             _save_N14ServerIP = Properties.Settings.Default.N14SERVERIP;
+            _save_SWGain = Properties.Settings.Default.SWGAIN;
         }
 
         private void LoadSettingContent()
@@ -1061,6 +1063,7 @@ namespace SciChartExamlpeOne
             setPage.edxN20ServerPort.Text = _save_N20ServerPort.ToString();
             setPage.edxN14ServerIP.Text = _save_N14ServerIP;
             setPage.edxN14ServerPort.Text = _save_N14ServerPort.ToString();
+            setPage.txbCalibGain.Text = _save_SWGain.ToString();
         }
 
         private void SetSettings()
@@ -1076,6 +1079,13 @@ namespace SciChartExamlpeOne
             _save_N20ServerPort = Convert.ToInt32(setPage.edxN20ServerPort.Text);
             _save_N14ServerIP = setPage.edxN14ServerIP.Text;
             _save_N14ServerPort = Convert.ToInt32(setPage.edxN14ServerPort.Text);
+            if(_save_SWGain != (decimal)setPage.txbCalibGain.Text.ToDouble())
+            {
+                _save_SWGain = (decimal)setPage.txbCalibGain.Text.ToDouble();
+                _adc_ConvertNum2Value = GetAdcCoef();
+            }
+            else
+                _save_SWGain = (decimal)setPage.txbCalibGain.Text.ToDouble();
         }
 
         private void SaveSettings()
@@ -1091,6 +1101,7 @@ namespace SciChartExamlpeOne
             Properties.Settings.Default.N20SERVERIP = _save_N20ServerIP;
             Properties.Settings.Default.N14SERVERPORT = _save_N14ServerPort;
             Properties.Settings.Default.N14SERVERIP = _save_N14ServerIP;
+            Properties.Settings.Default.SWGAIN = _save_SWGain;
         }
 
         private void ApplySettings()
@@ -1141,6 +1152,9 @@ namespace SciChartExamlpeOne
 
         void MainWindow_KeyDown(object sender, KeyEventArgs e)
         {
+            if ((DataContext as BorderViewModel).SettingVisible == Visibility.Visible)
+                return;
+
             if (e.Key == Key.Space || e.Key == Key.Enter)
             {
                 btnPlayPause_Click(null, null);
