@@ -59,5 +59,11 @@
     <Setting Name="N20SERVERPORT" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">2000</Value>
     </Setting>
+    <Setting Name="VERSIONNUMBER" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">2.1.10 build 10/13/2020</Value>
+    </Setting>
+    <Setting Name="FIFOENABLE" Type="System.Boolean" Scope="Application">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

@@ -157,10 +157,10 @@
                 </Button>
                 <s:SciChartSurface Grid.Row="1" x:Name="sciChartSurface" Grid.ColumnSpan="6">
                     <!--Define Renderable Series-->
-                    <s:SciChartSurface.RenderableSeries>
-                        <s:FastLineRenderableSeries x:Name="LineSeries" Stroke="#FF4083B7" s:LegendModifier.IncludeSeries="False" IsSelected="False" IsVisible="False"/>
+                    <!--<s:SciChartSurface.RenderableSeries>
+                        --><!--<s:FastLineRenderableSeries x:Name="LineSeries" Stroke="#FF4083B7" s:LegendModifier.IncludeSeries="False" IsSelected="False" IsVisible="False"/>--><!--
                         <s:FastLineRenderableSeries x:Name="FilteredSeries" Stroke="LightBlue"  s:LegendModifier.IncludeSeries="False"/>
-                    </s:SciChartSurface.RenderableSeries>
+                    </s:SciChartSurface.RenderableSeries>-->
                     <!-- Create X-Axis -->
                     <s:SciChartSurface.XAxis>
                         <s:NumericAxis AxisTitle="Time (ms)" DrawMajorTicks="False" DrawMinorTicks="False"
@@ -201,7 +201,7 @@
                 </s:SciChartSurface>
 
                 <!-- Add a Scrollbar, and bind to SciChartSurface.XAxis -->
-                <s:SciChartScrollbar Grid.Row="2" Axis="{Binding ElementName=sciChartSurface, Path=XAxis}" Grid.ColumnSpan="6"/>
+                <s:SciChartScrollbar x:Name="scbXAxis" Grid.Row="2" Axis="{Binding ElementName=sciChartSurface, Path=XAxis}" Grid.ColumnSpan="6"/>
 
                 <!-- Add StatusBar -->
                 <StatusBar Grid.Row="3" Grid.ColumnSpan="6" >

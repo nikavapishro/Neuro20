@@ -15,6 +15,7 @@ namespace SciChartExamlpeOne
         public SettingsControl()
         {
             InitializeComponent();
+            txtVersionHolder.Text = Properties.Settings.Default.VERSIONNUMBER;
         }
 
         public void ConfigCombo(int nIndex ,ref ComboBox cmb , int default_value)

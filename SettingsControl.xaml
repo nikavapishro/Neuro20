@@ -169,6 +169,12 @@
                             </TextBlock>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
+                            <TextBlock VerticalAlignment="Center" HorizontalAlignment="Left" LineHeight="25" Foreground="Black">
+                                Version Number:
+                            </TextBlock>
+                            <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center" LineHeight="25" Foreground="PaleGoldenrod" x:Name="txtVersionHolder" Text="VERSION"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
                             <TextBlock VerticalAlignment="Center" HorizontalAlignment="Left" Margin="20,20,20,0" LineHeight="25" Foreground="Black">
                                 Owner info:
                             </TextBlock>

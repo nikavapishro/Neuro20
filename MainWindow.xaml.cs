@@ -21,6 +21,7 @@ using System.Net.Sockets;
 using System.Linq;
 using System.Net;
 using System.IO;
+using SciChart.Charting.Visuals.RenderableSeries;
 
 namespace SciChartExamlpeOne
 {
@@ -165,7 +166,7 @@ namespace SciChartExamlpeOne
 
         private bool isDrawingSignal;
         private DispatcherTimer _sci_timer;
-        private XyDataSeries<double, double> _originalData;
+        //private XyDataSeries<double, double> _originalData;
         private FilterData _filterData;
         private TimeIndex _sci_timeIndex;
         private bool bResetGraph = false;
@@ -327,15 +328,6 @@ namespace SciChartExamlpeOne
         {
             this.Dispatcher.Invoke(() =>
             {
-                if (_tcp_myserver.bChangeComRequest == true) { 
-                    _tcp_myserver.bChangeComRequest = false;
-                    if (_tcp_myserver.nSW2Connection == 1)
-                        _com_bConnectionStatus = false;
-                    else
-                        _com_bConnectionStatus = true;
-                    Connect_Comm(null, null);
-                    rbChannel_Checked(null, null);
-                }
                 if (_tcp_myserver.bCloseRequest == true)
                 {
                     _tcp_myserver.bCloseRequest = false;
@@ -345,13 +337,23 @@ namespace SciChartExamlpeOne
                 {
                     _tcp_myserver.bChangeSizeRequest = false;
                     Application.Current.MainWindow.WindowState = _tcp_myserver.nWindowsState == 0 ? WindowState.Minimized : WindowState.Maximized;
-                    Topmost = _tcp_myserver.nWindowsState == 0 ? false : true;
+                    Topmost =  _tcp_myserver.nWindowsState == 0 ? false : true;
                     
                     //Disabled for Communication Method 2
                     //if (_tcp_myserver.nWindowsState == 0)
                     //Hide();
                     //else
                     //Show();
+                }
+                if (_tcp_myserver.bChangeComRequest == true)
+                {
+                    _tcp_myserver.bChangeComRequest = false;
+                    if (_tcp_myserver.nSW2Connection == 1)
+                        _com_bConnectionStatus = false;
+                    else
+                        _com_bConnectionStatus = true;
+                    Connect_Comm(null, null);
+                    rbChannel_Checked(null, null);
                 }
             });
         }
@@ -412,7 +414,7 @@ namespace SciChartExamlpeOne
             //sciChartSurface.ViewportManager = new ScrollingViewportManager(nTimeDataRange);
 
             // Create XyDataSeries to host data for our charts
-            _originalData = new XyDataSeries<double, double>();
+            //_originalData = new XyDataSeries<double, double>();
             //_originalData.FifoCapacity = _sci_timeIndex.getVisibleRange_int() ;
 
             //var _filteredData = new CustomFilter(_originalData);
@@ -422,9 +424,13 @@ namespace SciChartExamlpeOne
                  Constants.FIR_LOWPASS_ORDER, cmbLowPassFilter.SelectedValue.ToString().ToDouble());
             _filterData.ResetFilter(FilterTypes.Notch, Properties.Settings.Default.SAMPLERATE, Constants.FIR_NOTCH, 50.0);
             _filterData.isNotchEnable = (bool)cbxNotch.IsChecked;
+            _filterData.isFifoEnable = _save_SweepGraph ? false : Properties.Settings.Default.FIFOENABLE;
+            _filterData.nFifoLen = _sci_timeIndex.getVisibleRange_int();
 
-            _originalData.SeriesName = "Pure Data";
-            
+            scbXAxis.Visibility = Visibility.Hidden;
+
+            //_originalData.SeriesName = "Pure Data";
+
             //_filteredData.FilteredDataSeries.SeriesName = "Moving Average";
             _filterData._DataSeries.SeriesName = "Filterd Data";
 
@@ -432,9 +438,18 @@ namespace SciChartExamlpeOne
             //lineData.FifoCapacity = 1000 ;
 
             // Assign dataseries to RenderSeries
-            LineSeries.DataSeries = _originalData;
+            //LineSeries.DataSeries = _originalData;
             //FilteredSeries.DataSeries = _filteredData.FilteredDataSeries ;
-            FilteredSeries.DataSeries = _filterData._DataSeries;
+            //FilteredSeries.DataSeries = _filterData._DataSeries;
+
+            var FLTrenderSeries = new FastLineRenderableSeries
+            {
+                Stroke = (Color)ColorConverter.ConvertFromString("LightBlue"),
+                DataSeries = _filterData._DataSeries,
+                StrokeThickness = 1,
+                IsVisible = true,
+            };
+            sciChartSurface.RenderableSeries.Add(FLTrenderSeries);
 
             _sci_timer = new DispatcherTimer(DispatcherPriority.Render);
             _sci_timer.Interval = TimeSpan.FromMilliseconds((1000.0M / Properties.Settings.Default.RREFRESHFPS).ToDouble());
@@ -452,12 +467,13 @@ namespace SciChartExamlpeOne
 
             int idx = 0;
             byte[] data = new byte[nLen];
-            using (_originalData.SuspendUpdates())
+
+            using (_filterData._DataSeries.SuspendUpdates())
             {
                 if (bResetGraph)
                 {
                     _sci_timeIndex.Clear();
-                    _originalData.Clear();
+                    //_originalData.Clear();
                     _filterData.Clear();
                     bResetGraph = false;
                 }
@@ -474,14 +490,15 @@ namespace SciChartExamlpeOne
                         {
                             //double _index = (double)_sci_timeIndex.ConvertToTime(_sci_timeIndex.getIndex_int() % _sci_timeIndex.getVisibleRange_int());
                             double _index = (int)(_sci_timeIndex.getIndex_int() % _sci_timeIndex.getVisibleRange_int());
-                            if ((_originalData.Count < _sci_timeIndex.getVisibleRange_int()) && (_index >= _originalData.Count))
+                            //if ((_originalData.Count < _sci_timeIndex.getVisibleRange_int()) && (_index >= _originalData.Count))
+                            if ((_filterData._DataSeries.Count < _sci_timeIndex.getVisibleRange_int()) && (_index >= _filterData._DataSeries.Count))
                             {
-                                _originalData.Append(_index, (double)localvalue / (double)_adc_ConvertNum2Value.ToDouble());
+                                //_originalData.Append(_index, (double)localvalue / (double)_adc_ConvertNum2Value.ToDouble());
                                 _filterData.Append(_index, (double)localvalue / _adc_ConvertNum2Value.ToDouble());
                             }
                             else
                             {
-                                _originalData.Update(_index, (double)localvalue / (double)_adc_ConvertNum2Value.ToDouble());
+                                //_originalData.Update(_index, (double)localvalue / (double)_adc_ConvertNum2Value.ToDouble());
                                 _filterData.Update(_index, (double)localvalue / _adc_ConvertNum2Value.ToDouble());
                             }
                         }
@@ -490,18 +507,20 @@ namespace SciChartExamlpeOne
                         #region Normal Graph
                         if (!_save_SweepGraph)
                         {
-                            _originalData.Append(_sci_timeIndex.getIndex_double(), (double)localvalue / (double)_adc_ConvertNum2Value.ToDouble());
-                            _filterData.Append(_sci_timeIndex.getIndex_double(), (double)localvalue / _adc_ConvertNum2Value.ToDouble());
+                            double _index = (int)(_sci_timeIndex.getIndex_int());
+                            _filterData.Append(_index, (double)localvalue / _adc_ConvertNum2Value.ToDouble());
                         }
                         #endregion
 
                         _sci_timeIndex.Increment();
                     }
                 }
+
                 if (_save_SweepGraph) 
                     sciChartSurface.XAxis.VisibleRange = new DoubleRange(0, _sci_timeIndex.getVisibleRange_int());
-                else 
-                    sciChartSurface.XAxis.VisibleRange = new DoubleRange(_sci_timeIndex.getIndex_double() - _sci_timeIndex.getVisibleRange_double(), _sci_timeIndex.getIndex_double());
+                else
+                    //sciChartSurface.XAxis.VisibleRange = new DoubleRange(_sci_timeIndex.getIndex_double() - _sci_timeIndex.getVisibleRange_double(), _sci_timeIndex.getIndex_double());
+                    sciChartSurface.XAxis.VisibleRange = new DoubleRange(_sci_timeIndex.getIndex_int() - _sci_timeIndex.getVisibleRange_int(), _sci_timeIndex.getIndex_int());
             }
 
 #if SOUNDPLAYENABLE
@@ -577,6 +596,8 @@ namespace SciChartExamlpeOne
         private void numTimeDiv_ValueChanged(object sender, RoutedPropertyChangedEventArgs<decimal> e)
         {
             _sci_timeIndex.setScale(numTimeDiv.Value.ToDouble());
+            if(_filterData != null)
+                _filterData.nFifoLen = _sci_timeIndex.getVisibleRange_int();
             //sciChartSurface.ViewportManager = new ScrollingViewportManager(nTimeDataRange);
         }
 
@@ -735,7 +756,10 @@ namespace SciChartExamlpeOne
 
                 //Sets up serial port
                 _com_serial.PortName = _save_ComportName;
-                _com_serial.BaudRate = GetMaxBaud(_save_ComportName, _save_ComportBaud);
+                int nBaud = GetMaxBaud(_save_ComportName, _save_ComportBaud);
+                if (nBaud == -1)
+                    return;
+                _com_serial.BaudRate = nBaud;
                 _com_serial.Handshake = System.IO.Ports.Handshake.None;
                 _com_serial.Parity = Parity.None;
                 _com_serial.DataBits = 8;
@@ -795,6 +819,7 @@ namespace SciChartExamlpeOne
             }
             catch
             {
+                maxBaudRate = -1;
                 //ignored - traps exception generated by
                 //baudRate rate not supported
             }
@@ -1115,6 +1140,7 @@ namespace SciChartExamlpeOne
             if (_save_SweepGraph != (bool)setPage.cbxSweepGraph.IsChecked)
             {
                 bResetGraph = true;
+                _filterData.isFifoEnable = (bool)setPage.cbxSweepGraph.IsChecked ? false : Properties.Settings.Default.FIFOENABLE;
             }
             bool bRefreshConnection = false;
             if ((_save_ComportBaud != Convert.ToInt32(setPage.cmbBaudRate.Text)) | !_save_ComportName.Equals(setPage.cmbComportName.Text))

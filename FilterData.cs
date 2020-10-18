@@ -11,7 +11,9 @@ namespace SciChartExamlpeOne
     {
         public XyDataSeries<double, double> _DataSeries;
         public bool isNotchEnable = false;
+        public bool isFifoEnable = false;
 
+        public int nFifoLen = 0;
         private int nLastIndex;
         private const int _length_MA = Constants.MOVINGAVERAGE_LENGTH;   //Moving Average Filter Length
         private List<double> _OriginalValues;
@@ -127,13 +129,26 @@ namespace SciChartExamlpeOne
             else
                 result = yValue;
 
-            if (isNotchEnable)
+            if (isFifoEnable)
             {
-                _DataSeries.Append(xValue, _firNotch.compute(result));
+                double val = isNotchEnable ? _firNotch.compute(result) : result;
+
+                //Semi Fifo implementatio for decrease memory usage
+                if (_DataSeries.Count >= nFifoLen * 2)
+                    _DataSeries.RemoveRange(_DataSeries.Count - 2 * nFifoLen, nFifoLen);
+
+                _DataSeries.Append(xValue, val);
             }
             else
             {
-                _DataSeries.Append(xValue, result);
+                if (isNotchEnable)
+                {
+                    _DataSeries.Append(xValue, _firNotch.compute(result));
+                }
+                else
+                {
+                    _DataSeries.Append(xValue, result);
+                }
             }
 
             nLastIndex++;

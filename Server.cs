@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Windows;
 
 namespace SciChartExamlpeOne
 {
@@ -40,9 +41,12 @@ namespace SciChartExamlpeOne
                 while (!bCloseOrder)
                 {
                     TcpClient client = server.AcceptTcpClient();
-                    tHandleDevice = new Thread(new ParameterizedThreadStart(HandleDeivce));
-                    tHandleDevice.Start(client);
-                    Thread.Sleep(3);
+                    if (!tHandleDevice.IsAlive)
+                    {
+                        tHandleDevice = new Thread(new ParameterizedThreadStart(HandleDeivce));
+                        tHandleDevice.Start(client);
+                    }
+                    //Thread.Sleep(3);
                 }
 
             }
@@ -72,8 +76,9 @@ namespace SciChartExamlpeOne
                         nSW1Connection = 0;
                     else if (data == Constants.NEURO20CON)
                     {
-                        bChangeComRequest = true;
-                        nSW2Connection = 1;
+                        // Has been moved to Maximize Event - for avoid deplication it has been removed here
+                        //bChangeComRequest = true;
+                        //nSW2Connection = 1;
                     }
                     else if (data == Constants.NEURO20DIS)
                     {
@@ -86,6 +91,11 @@ namespace SciChartExamlpeOne
                     {
                         bChangeSizeRequest = true;
                         nWindowsState = 1;
+
+                        //Connection Modified HERE --> After bug remove, we have only one command excuted at once, 
+                        //then we prefer to maximize and connect together
+                        bChangeComRequest = true;
+                        nSW2Connection = 1;
                     }
                     else if (data == Constants.NEURO20MINI)
                     {
@@ -93,16 +103,20 @@ namespace SciChartExamlpeOne
                         nWindowsState = 0;
                     }
                     OnMyMethod();
-                    Thread.Sleep(3);
-                    client.Close();
-                    tHandleDevice.Abort();
+                    //Thread.Sleep(3);
+                    //client.Close();
+                    //tHandleDevice.Abort();
                     if (bCloseOrder)
                         break;
                 }
-
+                client.Close();
             }
             catch (Exception e)
             {
+                MessageBox.Show("1030:"+e.Message,
+                    "Abortion",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
                 client.Close();
             }
 
